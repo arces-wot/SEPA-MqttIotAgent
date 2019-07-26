@@ -461,6 +461,66 @@ public class MqttIotAgent {
 
 	public static void main(String[] args) throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException, IOException {
 
+//		JSAP app = new JSAP("base.jsap");
+//		
+//		// Environmental variable for DOCKER
+//		Map<String, String> env = System.getenv();
+//		if (env.containsKey("SEPA_HOST"))
+//			app.setHost(env.get("SEPA_HOST"));
+//		
+//		Consumer client = new Consumer(app,"PLACES",null) {
+//			
+//			@Override
+//			public void onUnsubscribe(String spuid) {
+//				logger.info("onUnsubscribe: "+spuid);
+//			}
+//			
+//			@Override
+//			public void onSubscribe(String spuid, String alias) {
+//				logger.info("onSubscribe: "+spuid+ " alias: "+alias);
+//			}
+//			
+//			@Override
+//			public void onError(ErrorResponse errorResponse) {
+//				logger.info("onError: "+errorResponse);
+//			}
+//			
+//			@Override
+//			public void onBrokenConnection() {
+//				logger.warn("onBrokenConnection");
+//			}
+//			
+//			@Override
+//			public void onResults(ARBindingsResults results) {
+//				logger.info("onResults: "+results);
+//			}
+//			
+//			@Override
+//			public void onRemovedResults(BindingsResults results) {
+//				logger.info("onRemovedResults: "+results);
+//			}
+//			
+//			@Override
+//			public void onFirstResults(BindingsResults results) {
+//				logger.info("onFirstResults: "+results);
+//			}
+//			
+//			@Override
+//			public void onAddedResults(BindingsResults results) {
+//				logger.info("onAddedResults: "+results);
+//			}
+//		};
+//		client.subscribe(1000);
+//		
+//		synchronized (client) {
+//			try {
+//				client.wait();
+//			} catch (InterruptedException e) {
+//				client.close();
+//			}	
+//		}
+		
+		
 		printUsage();
 
 		SEPASecurityManager sm = null;
@@ -475,8 +535,8 @@ public class MqttIotAgent {
 
 		// Environmental variable for DOCKER
 		Map<String, String> env = System.getenv();
-		if (env.containsKey("MQTT_IOT_AGENT_SEPA_BROKER_HOST"))
-			app.setHost(env.get("MQTT_IOT_AGENT_SEPA_BROKER_HOST"));
+		if (env.containsKey("SEPA_HOST"))
+			app.setHost(env.get("SEPA_HOST"));
 
 		// Clear history
 		if (clearHistory(args))
@@ -588,13 +648,21 @@ public class MqttIotAgent {
 
 		// Started
 		logger.info("Started");
-		logger.info("Press any key to exit...");
-		try {
-			System.in.read();
-		} catch (IOException e) {
-			logger.warn(e.getMessage());
-		}
+//		logger.info("Press any key to exit...");
+//		try {
+//			System.in.read();
+//		} catch (IOException e) {
+//			logger.warn(e.getMessage());
+//		}
 
+		synchronized (agent) {
+			try {
+				agent.wait();
+			} catch (InterruptedException e) {
+				logger.warn("Agent interrupted...exit now");
+			}
+		}
+		
 		logger.info("Closing...");
 
 		try {
