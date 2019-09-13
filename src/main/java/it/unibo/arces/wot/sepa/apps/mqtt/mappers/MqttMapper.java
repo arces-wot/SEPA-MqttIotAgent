@@ -23,12 +23,15 @@ import it.unibo.arces.wot.sepa.commons.sparql.Bindings;
 import it.unibo.arces.wot.sepa.commons.sparql.BindingsResults;
 import it.unibo.arces.wot.sepa.commons.sparql.RDFTermLiteral;
 import it.unibo.arces.wot.sepa.commons.sparql.RDFTermURI;
+import it.unibo.arces.wot.sepa.pattern.DTNGenericClient;
 import it.unibo.arces.wot.sepa.pattern.GenericClient;
 import it.unibo.arces.wot.sepa.pattern.JSAP;
 
 public abstract class MqttMapper extends GenericClient implements ISubscriptionHandler {
 	protected static final Logger logger = LogManager.getLogger();
 
+	private DTNGenericClient dtnGenericClient = null;
+	
 	// Topics mapping
 	protected HashMap<String, String> topic2observation = new HashMap<String, String>();
 	protected final HashMap<String,String> aliases = new HashMap<String,String>();
@@ -41,8 +44,7 @@ public abstract class MqttMapper extends GenericClient implements ISubscriptionH
 	protected ArrayList<Pattern> patterns = new ArrayList<Pattern>();
 	protected HashMap<String, Pattern> patternsMap = new HashMap<String,Pattern>();
 	
-	public MqttMapper(JSAP appProfile, SEPASecurityManager sm,String uri)
-			throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException {
+	public MqttMapper(JSAP appProfile, SEPASecurityManager sm, String uri, boolean enableDTN) throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException {
 		super(appProfile, sm);
 		
 		subscribe("MQTT_MAPPINGS", null,null, this, 5000,"mappings");
@@ -56,6 +58,9 @@ public abstract class MqttMapper extends GenericClient implements ISubscriptionH
 			fb.addBinding("mapper", new RDFTermURI(mapperUri));
 			subscribe("MQTT_MAPPER", null, fb,this, 5000,"mapper");	
 		}
+		
+		if (enableDTN)
+			this.dtnGenericClient = new DTNGenericClient(appProfile, sm);
 	}
 	
 	protected abstract ArrayList<String[]> map(String topic,String value);
@@ -104,7 +109,10 @@ public abstract class MqttMapper extends GenericClient implements ISubscriptionH
 					fb.addBinding("timestamp", new RDFTermLiteral(utc.toString()));
 					
 					try {
-						update("UPDATE_OBSERVATION_VALUE", fb, 5000);
+						if (this.dtnGenericClient != null) 					// HTTP
+							update("UPDATE_OBSERVATION_VALUE", fb, 5000);
+						else 												// DTN
+							this.dtnGenericClient.update("UPDATE_OBSERVATION_VALUE", fb, 5000);
 					} catch (SEPASecurityException | IOException | SEPAPropertiesException | SEPABindingsException | SEPAProtocolException e) {
 						logger.error(e.getMessage());
 					}

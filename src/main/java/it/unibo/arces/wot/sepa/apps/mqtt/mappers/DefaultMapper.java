@@ -11,9 +11,8 @@ import it.unibo.arces.wot.sepa.pattern.JSAP;
 
 public class DefaultMapper extends MqttMapper {
 	
-	public DefaultMapper(JSAP appProfile, SEPASecurityManager sm)
-			throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException {
-		super(appProfile, sm,null);
+	public DefaultMapper(JSAP appProfile, SEPASecurityManager sm, boolean enableDTN) throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException {
+		super(appProfile, sm,null,enableDTN);
 	}
 
 	@Override

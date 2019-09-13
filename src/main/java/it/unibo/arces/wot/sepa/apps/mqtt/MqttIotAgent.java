@@ -69,6 +69,7 @@ public class MqttIotAgent {
 		System.out.println("   -adapters: init the adapters from adapters.jsap");
 		System.out.println("   -mappings: init the mappings from mappings.jsap");
 		System.out.println("   -init: clear and init all");
+		System.out.println("   -dtn: enables DTN");
 	}
 
 	private static boolean doLog(String[] args) {
@@ -123,6 +124,13 @@ public class MqttIotAgent {
 	private static boolean clearHistory(String[] args) {
 		for (int i = 0; i < args.length; i++)
 			if (args[i].equals("-clear-history"))
+				return true;
+		return false;
+	}
+	
+	private static boolean dtn(String[] args) {
+		for (int i = 0; i < args.length; i++)
+			if (args[i].equals("-dtn"))
 				return true;
 		return false;
 	}
@@ -627,25 +635,25 @@ public class MqttIotAgent {
 		logger.info("Create mappers");
 		DefaultMapper defaultMapper = null;
 		try {
-			defaultMapper = new DefaultMapper(app, sm);
+			defaultMapper = new DefaultMapper(app, sm, dtn(args));
 		} catch (SEPAProtocolException | SEPASecurityException | SEPAPropertiesException | SEPABindingsException e1) {
 			logger.error("Failed to create default mapper " + e1.getMessage());
 		}
 
 		GuaspariMapper jsonMapper = null;
 		try {
-			jsonMapper = new GuaspariMapper(app, sm);
+			jsonMapper = new GuaspariMapper(app, sm, dtn(args));
 		} catch (SEPAProtocolException | SEPASecurityException | SEPAPropertiesException | SEPABindingsException e1) {
 			logger.error("Failed to create json mapper " + e1.getMessage());
 		}
 
 		WizzilabMapper wizziMapper = null;
 		try {
-			wizziMapper = new WizzilabMapper(app, sm);
+			wizziMapper = new WizzilabMapper(app, sm, dtn(args));
 		} catch (SEPAProtocolException | SEPASecurityException | SEPAPropertiesException | SEPABindingsException e1) {
 			logger.error("Failed to create json mapper " + e1.getMessage());
 		}
-
+		
 		// Started
 		logger.info("Started");
 //		logger.info("Press any key to exit...");

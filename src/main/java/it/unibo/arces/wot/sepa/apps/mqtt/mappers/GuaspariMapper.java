@@ -38,9 +38,9 @@ import it.unibo.arces.wot.sepa.pattern.JSAP;
  */
 public class GuaspariMapper extends MqttMapper {
 
-	public GuaspariMapper(JSAP appProfile, SEPASecurityManager sm)
+	public GuaspariMapper(JSAP appProfile, SEPASecurityManager sm, boolean enableDTN)
 			throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException {
-		super(appProfile, sm, "mqtt:GuaspariMapper");
+		super(appProfile, sm, "mqtt:GuaspariMapper", enableDTN);
 	}
 	
 	@Override

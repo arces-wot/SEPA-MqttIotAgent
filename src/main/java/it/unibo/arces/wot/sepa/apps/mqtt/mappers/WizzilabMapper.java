@@ -30,9 +30,9 @@ import it.unibo.arces.wot.sepa.pattern.JSAP;
  */
 public class WizzilabMapper extends MqttMapper {
 
-	public WizzilabMapper(JSAP appProfile, SEPASecurityManager sm)
+	public WizzilabMapper(JSAP appProfile, SEPASecurityManager sm, boolean enableDTN)
 			throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException {
-		super(appProfile, sm, "mqtt:WizzilabMapper");
+		super(appProfile, sm, "mqtt:WizzilabMapper", enableDTN);
 	}
 
 	@Override

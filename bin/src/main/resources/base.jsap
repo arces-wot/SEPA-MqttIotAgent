@@ -1,26 +1,9 @@
 {
-	"host": "localhost",
+	"host": "mml.arces.unibo.it",
 	"oauth": {
 		"enable": false,
 		"register": "https://localhost:8443/oauth/register",
 		"tokenRequest": "https://localhost:8443/oauth/token"
-	},
-	"dtnprotocol": {
-		"schema": "ipn",
-		"availableSchemas": {
-			"ipn": {
-				"destination": "100",
-				"updatedemux": 150,
-				"querydemux": 151,
-				"subscribedemux": 152 
-			},
-			"dtn": {
-				"destination": "destmachine",
-				"updatedemux": "/sepa/update",
-				"querydemux": "/sepa/query",
-				"subscribedemux": "/sepa/subscription"
-			}
-		}
 	},
 	"sparql11protocol": {
 		"protocol": "http",
