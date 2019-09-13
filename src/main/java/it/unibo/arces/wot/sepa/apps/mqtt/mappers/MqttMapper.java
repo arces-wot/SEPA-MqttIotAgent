@@ -109,7 +109,7 @@ public abstract class MqttMapper extends GenericClient implements ISubscriptionH
 					fb.addBinding("timestamp", new RDFTermLiteral(utc.toString()));
 					
 					try {
-						if (this.dtnGenericClient != null) 					// HTTP
+						if (this.dtnGenericClient == null) 					// HTTP
 							update("UPDATE_OBSERVATION_VALUE", fb, 5000);
 						else 												// DTN
 							this.dtnGenericClient.update("UPDATE_OBSERVATION_VALUE", fb, 5000);
