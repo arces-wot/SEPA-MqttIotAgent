@@ -56,10 +56,10 @@
 				<artifactId>maven-antrun-plugin</artifactId>
 				<configuration>
 					<tasks>
-						<copy file="target/sepa.apps.mqtt.MqttIotAgent-0.0.1-SNAPSHOT.jar"
+						<copy
+							file="target/sepa.apps.mqtt.MqttIotAgent-0.0.1-SNAPSHOT.jar"
 							tofile="docker/sepa.apps.mqtt.MqttIotAgent-0.0.1-SNAPSHOT.jar" />
-							<copy file="target/base.jsap"
-							tofile="docker/base.jsap" />
+						<copy file="target/base.jsap" tofile="docker/base.jsap" />
 					</tasks>
 				</configuration>
 				<executions>
