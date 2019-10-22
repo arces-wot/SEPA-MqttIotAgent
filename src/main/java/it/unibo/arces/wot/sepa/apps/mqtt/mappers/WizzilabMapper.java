@@ -1,5 +1,6 @@
 package it.unibo.arces.wot.sepa.apps.mqtt.mappers;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import com.google.gson.JsonObject;
@@ -30,6 +31,16 @@ import it.unibo.arces.wot.sepa.pattern.JSAP;
  */
 public class WizzilabMapper extends MqttMapper {
 
+	public static void main(String[] args) throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException, InterruptedException, IOException{			
+		WizzilabMapper mapper = new WizzilabMapper(new JSAP("mqtt.jsap"),null);
+		
+		synchronized(mapper) {
+			mapper.wait();
+		}
+		
+		mapper.close();		
+	}
+	
 	public WizzilabMapper(JSAP appProfile, SEPASecurityManager sm)
 			throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException {
 		super(appProfile, sm, "mqtt:WizzilabMapper");
