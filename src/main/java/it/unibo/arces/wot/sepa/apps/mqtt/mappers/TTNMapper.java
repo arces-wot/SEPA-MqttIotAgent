@@ -16,45 +16,18 @@ import it.unibo.arces.wot.sepa.commons.security.SEPASecurityManager;
 import it.unibo.arces.wot.sepa.pattern.JSAP;
 
 /**
- * {
-  "battery": 0,
-  "sensor1": {
-    "Conductivity": 86.02,
-    "Permittivity": 17.34,
-    "Temperature": 51.68
-  },
-  "sensor2": {
-    "Conductivity": 86.02,
-    "Permittivity": 17.34,
-    "Temperature": 51.68
-  },
-  "sensor3": {
-    "Conductivity": 86.02,
-    "Permittivity": 17.34,
-    "Temperature": 51.68
-  },
-  "sensor4": {
-    "Conductivity": 86.02,
-    "Permittivity": 17.34,
-    "Temperature": 51.68
-  },
-  "sensor5": {
-    "Conductivity": 86.02,
-    "Permittivity": 17.34,
-    "Temperature": 51.68
-  },
-  "sensor6": {
-    "Conductivity": 86.02,
-    "Permittivity": 17.34,
-    "Temperature": 51.68
-  }
+{
+"payload_fields":{
+	"battery":85,
+	"sensor_1":{"Conductivity":1,"Permittivity":124.05,"Temperature":22.7},
+	"sensor_3":{"Conductivity":1,"Permittivity":0.52,"Temperature":23.1},
+	"sensor_6":{"Conductivity":1,"Permittivity":0.52,"Temperature":22.8}}
 }
- * 
  * */
-public class MeterSoilMoistureMapper extends MqttMapper {
+public class TTNMapper extends MqttMapper {
 
 	public static void main(String[] args) throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException, InterruptedException, IOException{			
-		MeterSoilMoistureMapper mapper = new MeterSoilMoistureMapper(new JSAP("mqtt.jsap"),null);
+		TTNMapper mapper = new TTNMapper(new JSAP("mqtt.jsap"),null);
 		
 		synchronized(mapper) {
 			mapper.wait();
@@ -63,7 +36,7 @@ public class MeterSoilMoistureMapper extends MqttMapper {
 		mapper.close();		
 	}
 	
-	public MeterSoilMoistureMapper(JSAP appProfile, SEPASecurityManager sm)
+	public TTNMapper(JSAP appProfile, SEPASecurityManager sm)
 			throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException {
 		super(appProfile, sm, "mqtt:MeterMapper");
 	}
@@ -74,16 +47,42 @@ public class MeterSoilMoistureMapper extends MqttMapper {
 		
 		JsonObject json = new JsonParser().parse(value).getAsJsonObject();
 		
+		if (!json.has("payload_fields")) {
+			logger.error("payload_fields member not found: "+value);
+			return mapping;
+		}
+		
+		json = json.getAsJsonObject("payload_fields");
+		
 		for (Entry<String, JsonElement> elem : json.entrySet()) {
+			String t = null;
+			String v = null;
+			
 			if (elem.getKey().equals("battery")) {
-				mapping.add(new String[] {topic+"/battery",String.format("%d", elem.getValue().getAsInt())});
+				t = topic+"/battery";
+				v = String.format("%d", elem.getValue().getAsInt());
 			}
 			else if (elem.getKey().startsWith("sensor")) {
 				JsonObject sensor = json.get(elem.getKey()).getAsJsonObject();
-				for (Entry<String, JsonElement> observation : sensor.entrySet()) { 
-					mapping.add(new String[] {topic+"/"+elem.getKey()+"/"+observation.getKey(),String.format("%.2f", observation.getValue().getAsFloat())});
+				for (Entry<String, JsonElement> sens : sensor.entrySet()) {
+					t = topic+"/"+elem.getKey()+"/"+sens.getKey();
+					v = String.format("%.2f", sens.getValue().getAsFloat());					
 				}
 			}
+			
+			if (t == null) {
+				logger.warn("Topic: "+topic+" Failed to parse: "+elem.getKey());
+				continue;
+			}
+			
+			String observation = topic2observation.get(t);
+			
+			if (observation == null) {
+				logger.warn("Topic: "+t+" MAPPING NOT FOUND");
+				continue;
+			}
+			
+			mapping.add(new String[] {observation,v});
 		}
 		
 		return mapping;
