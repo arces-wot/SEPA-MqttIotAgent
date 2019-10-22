@@ -1,4 +1,90 @@
 {
+	"updates" : {
+		"REMOVE_PLACE": {
+			"sparql": "WITH <http://wot.arces.unibo.it/context> DELETE {?place rdf:type schema:Place; schema:name ?name ;  schema:GeoCoordinates ?coordinate . ?coordinate schema:latitude ?lat ; schema:longitude ?lon} WHERE {?place rdf:type schema:Place; schema:name ?name ;  schema:GeoCoordinates ?coordinate . ?coordinate schema:latitude ?lat ; schema:longitude ?lon}",
+			"forcedBindings": {
+				"place": {
+					"type": "uri",
+					"value": "arces-monitor:Mars"
+				}
+			}
+		},
+		"ADD_PLACE": {
+			"sparql": "INSERT {GRAPH <http://wot.arces.unibo.it/context> {?place rdf:type schema:Place; schema:name ?name ;  schema:GeoCoordinates _:coordinate . _:coordinate schema:latitude ?lat ; schema:longitude ?lon}} WHERE {}",
+			"forcedBindings": {
+				"place": {
+					"type": "uri",
+					"value": "arces-monitor:Mars"
+				},
+				"name": {
+					"type": "literal",
+					"value": "Mars"
+				},
+				"lat": {
+					"type": "literal",
+					"value": "44.489664",
+					"datatype": "xsd:decimal"
+				},
+				"lon": {
+					"type": "literal",
+					"value": "11.357023",
+					"datatype": "xsd:decimal"
+				}
+			}
+		},
+		"LINK_PLACES": {
+			"sparql": "INSERT DATA { GRAPH <http://wot.arces.unibo.it/context> {?root schema:containsPlace ?child . ?child schema:containedInPlace ?root }}",
+			"forcedBindings": {
+				"root": {
+					"type": "uri",
+					"value": "arces-monitor:rootPlace"
+				},
+				"child": {
+					"type": "uri",
+					"value": "arces-monitor:childPlace"
+				}
+			}
+		},
+		"DELETE_LINK_PLACES": {
+			"sparql": "DELETE DATA { GRAPH <http://wot.arces.unibo.it/context> {?root schema:containsPlace ?child . ?child schema:containedInPlace ?root }}",
+			"forcedBindings": {
+				"root": {
+					"type": "uri",
+					"value": "arces-monitor:rootPlace"
+				},
+				"child": {
+					"type": "uri",
+					"value": "arces-monitor:childPlace"
+				}
+			}
+		}
+	},
+	"queries" : {
+		"PLACES_COUNT": {
+			"sparql": "SELECT (COUNT(?place) AS ?count) WHERE {GRAPH <http://wot.arces.unibo.it/context> {?place rdf:type schema:Place}}"
+		},
+		"PLACES": {
+			"sparql": "SELECT * WHERE {GRAPH <http://wot.arces.unibo.it/context> {?place rdf:type schema:Place; schema:name ?name ;  schema:GeoCoordinates ?coordinate . ?coordinate schema:latitude ?lat ; schema:longitude ?long}}"
+		},
+		"NO_CHILD": {
+			"sparql": "SELECT * WHERE {GRAPH <http://wot.arces.unibo.it/context> {?root rdf:type schema:Place ; schema:name ?name . FILTER NOT EXISTS{?child schema:containedInPlace ?root}}}"
+		},
+		"MAP_PLACES": {
+			"sparql": "SELECT * WHERE {GRAPH <http://wot.arces.unibo.it/context> {?root rdf:type schema:Place; schema:name ?name ;  schema:GeoCoordinates ?coordinate . ?coordinate schema:latitude ?lat ; schema:longitude ?long.  FILTER NOT EXISTS{?root schema:containedInPlace ?place}}}"
+		},
+		"CONTAINED_PLACES": {
+			"sparql": "SELECT * WHERE {GRAPH <http://wot.arces.unibo.it/context> {?root schema:containsPlace ?child }}",
+			"forcedBindings": {
+				"root": {
+					"type": "uri",
+					"value": "arces-monitor:Mars"
+				}
+			}
+		},
+		"ROOT_PLACES": {
+			"sparql": "SELECT * WHERE {GRAPH <http://wot.arces.unibo.it/context> {?root rdf:type schema:Place .  FILTER NOT EXISTS{?root schema:containedInPlace ?place} }}"
+		}
+	},
 	"extended": {
 		"places": {
 			"swamp:Embrapa_EndNode1002": {

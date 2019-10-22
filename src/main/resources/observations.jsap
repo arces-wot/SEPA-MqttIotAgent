@@ -1,4 +1,103 @@
 {
+	"updates" : {
+		"REMOVE_OBSERVATION": {
+			"sparql": "WITH <http://wot.arces.unibo.it/observation> DELETE {?observation rdf:type sosa:Observation ; ?p ?o} WHERE {?observation rdf:type sosa:Observation ; ?p ?o}",
+			"forcedBindings": {
+				"observation": {
+					"type": "uri",
+					"value": "arces-monitor:ObservationXYZ"
+				}
+			}
+		},
+		"ADD_OBSERVATION": {
+			"sparql": "INSERT {GRAPH <http://wot.arces.unibo.it/observation> {?observation rdf:type sosa:Observation ; rdfs:label ?label ; rdfs:comment ?comment ; sosa:hasFeatureOfInterest ?location ; sosa:hasResult _:quantity . _:quantity rdf:type qudt:QuantityValue ; qudt:unit ?unit ; qudt:numericValue 'NaN'}} WHERE {}",
+			"forcedBindings": {
+				"observation": {
+					"type": "uri",
+					"value": "arces-monitor:ObservationXYZ"
+				},
+				"comment": {
+					"type": "literal",
+					"value": "This is an observation"
+				},
+				"label": {
+					"type": "literal",
+					"value": "The observation XYZ"
+				},
+				"location": {
+					"type": "uri",
+					"value": "arces-monitor:Mars"
+				},
+				"unit": {
+					"type": "uri",
+					"value": "unit:DegreeCelsius"
+				}
+			}
+		},
+		"ADD_OBSERVATION_FORECAST": {
+			"sparql": "INSERT { GRAPH <http://wot.arces.unibo.it/forecast> { _:observation rdf:type sosa:Observation ; rdf:type swamp:Forecast; sosa:hasFeatureOfInterest ?feature ; sosa:observedProperty ?property; sosa:resultTime ?time; sosa:phenomenonTime ?ptime; sosa:hasResult _:result . _:result rdf:type qudt:QuantityValue ; rdf:type sosa:Result; sosa:isResultOf ?observation; qudt:unit ?unit ; qudt:numericValue ?value} } WHERE {}",
+			"forcedBindings": {
+				"feature": {
+					"type": "uri"
+				},
+				"property": {
+					"type": "uri"
+				},
+				"time": {
+					"type": "literal",
+					"datatype": "xsd:DateTime"
+				},
+				"ptime": {
+					"type": "literal",
+					"datatype": "xsd:DateTime"
+				},
+				"unit": {
+					"type": "uri",
+					"value": "unit:DegreeCelsius"
+				},
+				"value": {
+					"type": "literal",
+					"datatype": "xsd:decimal",
+					"value": 123
+				}
+			}
+		}
+	},
+	"queries" : {
+		"OBSERVATIONS_COUNT": {
+			"sparql": "SELECT (COUNT(?observation) AS ?count) WHERE {GRAPH <http://wot.arces.unibo.it/observation> {?observation rdf:type sosa:Observation}}"
+		},
+		"OBSERVATIONS": {
+			"sparql": "SELECT * WHERE {?unit qudt:symbol ?symbol . GRAPH <http://wot.arces.unibo.it/observation> {?observation rdf:type sosa:Observation ; rdfs:label ?label ; sosa:hasResult ?quantity ; sosa:hasFeatureOfInterest ?location . ?quantity rdf:type qudt:QuantityValue ; qudt:unit ?unit . OPTIONAL {?quantity qudt:numericValue ?value} . OPTIONAL {?observation sosa:resultTime ?timestamp}} . GRAPH <http://wot.arces.unibo.it/context> {?location schema:name ?name} }"
+		},
+		"OBSERVATIONS_BY_LOCATION": {
+			"sparql": "SELECT * WHERE {GRAPH <http://wot.arces.unibo.it/observation> {?observation sosa:hasFeatureOfInterest ?location ; rdf:type sosa:Observation ; rdfs:label ?label ; sosa:hasResult ?quantity . ?quantity rdf:type qudt:QuantityValue ; qudt:unit ?unit . OPTIONAL {?quantity qudt:numericValue ?value} . OPTIONAL {?observation sosa:resultTime ?timestamp}}}",
+			"forcedBindings": {
+				"location": {
+					"type": "uri",
+					"value": "arces-monitor:Mars"
+				}
+			}
+		},
+		"OBSERVATIONS_BY_UNIT": {
+			"sparql": "SELECT * WHERE {GRAPH <http://wot.arces.unibo.it/observation> {?observation rdf:type sosa:Observation ; rdfs:label ?label ; sosa:hasFeatureOfInterest ?location ; sosa:hasResult ?quantity . ?quantity rdf:type qudt:QuantityValue ; qudt:unit ?unit . OPTIONAL {?quantity qudt:numericValue ?value} . OPTIONAL {?observation sosa:resultTime ?timestamp}}}",
+			"forcedBindings": {
+				"unit": {
+					"type": "uri",
+					"value": "unit:DegreeCelsius"
+				}
+			}
+		},
+		"ALL_VALUES": {
+			"sparql": "SELECT * WHERE {GRAPH <http://wot.arces.unibo.it/observation> {?observation rdf:type sosa:Observation ; rdfs:label ?label ; sosa:hasFeatureOfInterest ?location ; sosa:hasResult ?quantity . ?quantity rdf:type qudt:QuantityValue ; qudt:unit ?unit OPTIONAL {?quantity qudt:numericValue ?value} . OPTIONAL {?observation sosa:resultTime ?timestamp}}}",
+			"forcedBindings": {
+				"observation": {
+					"type": "uri",
+					"value": "arces-monitor:ObservationXYZ"
+				}
+			}
+		}
+	},
 	"extended": {
 		"observations": {
 			"swamp:Embrapa_EndNode1002_B": {
