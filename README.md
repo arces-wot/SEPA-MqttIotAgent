@@ -72,16 +72,16 @@ The agent configuration parameters are all store in the knowledge graph and the 
 ##### Add an MQTT broker
 ![](img/1_ADD_MQTT_BROKER.png)
 ##### Add a topic to an broker
-![](img/2-ADD TOPIC TO MQTT BROKER.png)
+![](img/2_ADD_TOPIC_TO_MQTT_BROKER.png)
 ##### Add a mapper
-![](img/3-ADD MQTT MAPPER.png)
+![](img/3_ADD_MQTT_MAPPER.png)
 ##### Add a mapping
-![](img/4-ADD MQTT MAPPING.png)
+![](img/4_ADD_MQTT_MAPPING.png)
 #### Setting the context
 
 ##### Add an observation
-![](img/5-ADD OBSERVATION.png)
+![](img/5_ADD_OBSERVATION.png)
 ##### Add a place
-![](img/6-ADD PLACE.png)
+![](img/6_ADD_PLACE.png)
 ##### Nesting places
-![](img/7-LINK PLACES.png)
+![](img/7_LINK_PLACES.png)
