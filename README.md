@@ -70,7 +70,7 @@ The mapper then needs to know which is the observation URI to be associated with
 The agent configuration parameters are all store in the knowledge graph and the agent is subscribed to them. A generic configuration process consists of one or more of the following steps. All the steps can be performed using the SEPA Dashboard, available as [Java application](https://github.com/arces-wot/SEPA-Dashboard) or [web application](https://github.com/arces-wot/SEPA-Dashboard---bs). An online version is available [here](http://mml.arces.unibo.it/apps/dashboard/). The JSAP files to be used can be found within the resource files.
 
 ##### Add an MQTT broker
-![](img/1-ADD MQTT BROKER.png)
+![](img/1_ADD_MQTT_BROKER.png)
 ##### Add a topic to an broker
 ![](img/2-ADD TOPIC TO MQTT BROKER.png)
 ##### Add a mapper
