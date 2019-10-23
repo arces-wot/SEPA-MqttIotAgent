@@ -16,6 +16,9 @@ import it.unibo.arces.wot.sepa.commons.security.SEPASecurityManager;
 import it.unibo.arces.wot.sepa.pattern.JSAP;
 
 /**
+ * 
+ * TOPIC: transmission_example/devices/new_device/up
+ * 
 {
 "payload_fields":{
 	"battery":85,
@@ -55,34 +58,36 @@ public class TTNMapper extends MqttMapper {
 		json = json.getAsJsonObject("payload_fields");
 		
 		for (Entry<String, JsonElement> elem : json.entrySet()) {
-			String t = null;
-			String v = null;
-			
+					
 			if (elem.getKey().equals("battery")) {
-				t = topic+"/battery";
-				v = String.format("%d", elem.getValue().getAsInt());
+				String t = topic+"/battery";
+				String v = String.format("%d", elem.getValue().getAsInt());
+				
+				String observation = topic2observation.get(t);
+				
+				if (observation == null) {
+					logger.warn("Topic: "+t+" MAPPING NOT FOUND");
+					continue;
+				}
+				
+				mapping.add(new String[] {observation,v});
 			}
 			else if (elem.getKey().startsWith("sensor")) {
 				JsonObject sensor = json.get(elem.getKey()).getAsJsonObject();
 				for (Entry<String, JsonElement> sens : sensor.entrySet()) {
-					t = topic+"/"+elem.getKey()+"/"+sens.getKey();
-					v = String.format("%.2f", sens.getValue().getAsFloat());					
+					String t = topic+"/"+elem.getKey()+"/"+sens.getKey();
+					String v = String.format("%.2f", sens.getValue().getAsFloat());	
+					
+					String observation = topic2observation.get(t);
+					
+					if (observation == null) {
+						logger.warn("Topic: "+t+" MAPPING NOT FOUND");
+						continue;
+					}
+					
+					mapping.add(new String[] {observation,v});
 				}
 			}
-			
-			if (t == null) {
-				logger.warn("Topic: "+topic+" Failed to parse: "+elem.getKey());
-				continue;
-			}
-			
-			String observation = topic2observation.get(t);
-			
-			if (observation == null) {
-				logger.warn("Topic: "+t+" MAPPING NOT FOUND");
-				continue;
-			}
-			
-			mapping.add(new String[] {observation,v});
 		}
 		
 		return mapping;
