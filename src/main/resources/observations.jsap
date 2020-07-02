@@ -1,11 +1,34 @@
 {
+	"namespaces": {
+		"schema": "http://schema.org/",
+		"rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+		"rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+		"sosa": "http://www.w3.org/ns/sosa/",
+		"qudt": "http://qudt.org/schema/qudt#",
+		"unit": "http://qudt.org/vocab/unit#",
+		"mqtt": "http://wot.arces.unibo.it/mqtt#",
+		"time": "http://www.w3.org/2006/time#"
+	},
 	"updates" : {
 		"REMOVE_OBSERVATION": {
-			"sparql": "WITH <http://wot.arces.unibo.it/observation> DELETE {?observation rdf:type sosa:Observation ; ?p ?o} WHERE {?observation rdf:type sosa:Observation ; ?p ?o}",
+			"sparql": "DELETE {GRAPH <http://wot.arces.unibo.it/observation> {?observation rdf:type sosa:Observation ; rdfs:label ?label ; sosa:hasResult ?quantity ; sosa:hasFeatureOfInterest ?location . ?quantity rdf:type qudt:QuantityValue ; qudt:unit ?unit . ?quantity qudt:numericValue ?value . ?observation sosa:resultTime ?timestamp}} WHERE {?unit qudt:symbol ?symbol . GRAPH <http://wot.arces.unibo.it/observation> {?observation rdf:type sosa:Observation ; rdfs:label ?label ; sosa:hasResult ?quantity ; sosa:hasFeatureOfInterest ?location . ?quantity rdf:type qudt:QuantityValue ; qudt:unit ?unit . OPTIONAL {?quantity qudt:numericValue ?value} . OPTIONAL {?observation sosa:resultTime ?timestamp}} . GRAPH <http://wot.arces.unibo.it/context> {?location schema:name ?name} }",
 			"forcedBindings": {
 				"observation": {
 					"type": "uri",
-					"value": "arces-monitor:ObservationXYZ"
+					"value": "http://a.uri/ObservationXYZ"
+				}
+			}
+		},
+		"UPDATE_OBSERVATION_LABEL": {
+			"sparql": "DELETE {GRAPH <http://wot.arces.unibo.it/observation> {?observation rdfs:label ?oldlabel}} INSERT {GRAPH <http://wot.arces.unibo.it/observation> {?observation rdfs:label ?label}} WHERE {GRAPH <http://wot.arces.unibo.it/observation> {?observation rdfs:label ?oldlabel}}",
+			"forcedBindings": {
+				"observation": {
+					"type": "uri",
+					"value": "http://a.uri/ObservationXYZ"
+				},
+				"label": {
+					"type": "literal",
+					"value": "The observation XYZ"
 				}
 			}
 		},
@@ -14,7 +37,7 @@
 			"forcedBindings": {
 				"observation": {
 					"type": "uri",
-					"value": "arces-monitor:ObservationXYZ"
+					"value": "http://a.uri/ObservationXYZ"
 				},
 				"comment": {
 					"type": "literal",
@@ -26,7 +49,7 @@
 				},
 				"location": {
 					"type": "uri",
-					"value": "arces-monitor:Mars"
+					"value": "http://a.uri/Mars"
 				},
 				"unit": {
 					"type": "uri",
@@ -68,14 +91,14 @@
 			"sparql": "SELECT (COUNT(?observation) AS ?count) WHERE {GRAPH <http://wot.arces.unibo.it/observation> {?observation rdf:type sosa:Observation}}"
 		},
 		"OBSERVATIONS": {
-			"sparql": "SELECT * WHERE {?unit qudt:symbol ?symbol . GRAPH <http://wot.arces.unibo.it/observation> {?observation rdf:type sosa:Observation ; rdfs:label ?label ; sosa:hasResult ?quantity ; sosa:hasFeatureOfInterest ?location . ?quantity rdf:type qudt:QuantityValue ; qudt:unit ?unit . OPTIONAL {?quantity qudt:numericValue ?value} . OPTIONAL {?observation sosa:resultTime ?timestamp}} . GRAPH <http://wot.arces.unibo.it/context> {?location schema:name ?name} }"
+			"sparql": "SELECT * FROM <http://wot.arces.unibo.it/unit> FROM <http://swamp-project.org/observation/cbec> FROM <http://wot.arces.unibo.it/observation> FROM <http://wot.arces.unibo.it/context> WHERE {?observation rdf:type sosa:Observation ; rdfs:label ?label ; sosa:hasResult ?quantity ; sosa:hasFeatureOfInterest ?location . ?location rdf:type schema:Place ; schema:name ?name ; schema:GeoCoordinates ?coordinate . ?coordinate schema:latitude ?lat ; schema:longitude ?long . ?quantity rdf:type qudt:QuantityValue ; qudt:unit ?unit . OPTIONAL {?quantity qudt:numericValue ?value} . OPTIONAL {?observation sosa:resultTime ?timestamp} . ?location schema:name ?name . OPTIONAL{?unit qudt:symbol ?symbol}}"
 		},
 		"OBSERVATIONS_BY_LOCATION": {
 			"sparql": "SELECT * WHERE {GRAPH <http://wot.arces.unibo.it/observation> {?observation sosa:hasFeatureOfInterest ?location ; rdf:type sosa:Observation ; rdfs:label ?label ; sosa:hasResult ?quantity . ?quantity rdf:type qudt:QuantityValue ; qudt:unit ?unit . OPTIONAL {?quantity qudt:numericValue ?value} . OPTIONAL {?observation sosa:resultTime ?timestamp}}}",
 			"forcedBindings": {
 				"location": {
 					"type": "uri",
-					"value": "arces-monitor:Mars"
+					"value": "http://a.uri/Mars"
 				}
 			}
 		},
@@ -93,7 +116,7 @@
 			"forcedBindings": {
 				"observation": {
 					"type": "uri",
-					"value": "arces-monitor:ObservationXYZ"
+					"value": "http://a.uri/ObservationXYZ"
 				}
 			}
 		}
@@ -160,102 +183,138 @@
 				"comment": "Embrapa EndNode1001 reading level H3 in Guaspari",
 				"label": "Soil probe reading H3"
 			},
-			"arces-monitor:001BC50C700009CD-Temperature": {
+			"http://a.uri/001BC50C700009CD-Temperature": {
 				"unit": "unit:DegreeCelsius",
-				"location": "arces-monitor:Star_SEHM_Lab",
+				"location": "http://a.uri/Star_SEHM_Lab",
 				"comment": "Temperature sensor used to show the need of a new air conditioning system in SEHM lab",
 				"label": "SEHM lab temperature (Star)"
 			},
-			"arces-monitor:001BC50C700009CD-Humidity": {
+			"http://a.uri/001BC50C700009CD-Humidity": {
 				"unit": "unit:Percent",
-				"location": "arces-monitor:Star_SEHM_Lab",
+				"location": "http://a.uri/Star_SEHM_Lab",
 				"comment": "Humidity sensor used to show the need of a new air conditioning system in SEHM lab",
 				"label": "SEHM lab humidity (Star)"
 			},
-			"arces-monitor:001BC50C700009CD-Pressure": {
+			"http://a.uri/001BC50C700009CD-Pressure": {
 				"unit": "unit:Millibar",
-				"location": "arces-monitor:Star_SEHM_Lab",
+				"location": "http://a.uri/Star_SEHM_Lab",
 				"comment": "Pressure sensor used to show the need of a new air conditioning system in SEHM lab",
 				"label": "SEHM lab pressure (Star)"
 			},
-			"arces-monitor:001BC50C700009CD-Acc-X": {
+			"http://a.uri/001BC50C700009CD-Acc-X": {
 				"unit": "unit:Gravity",
-				"location": "arces-monitor:Star_SEHM_Lab",
+				"location": "http://a.uri/Star_SEHM_Lab",
 				"comment": "Accelerometer X axis",
 				"label": "SEHM lab accelerometer X axis (Star)"
 			},
-			"arces-monitor:001BC50C700009CD-Acc-Y": {
+			"http://a.uri/001BC50C700009CD-Acc-Y": {
 				"unit": "unit:Gravity",
-				"location": "arces-monitor:Star_SEHM_Lab",
+				"location": "http://a.uri/Star_SEHM_Lab",
 				"comment": "Accelerometer Y axis",
 				"label": "SEHM lab accelerometer Y axis (Star)"
 			},
-			"arces-monitor:001BC50C700009CD-Acc-Z": {
+			"http://a.uri/001BC50C700009CD-Acc-Z": {
 				"unit": "unit:Gravity",
-				"location": "arces-monitor:Star_SEHM_Lab",
+				"location": "http://a.uri/Star_SEHM_Lab",
 				"comment": "Accelerometer Z axis sensor used to show the need of a new air conditioning system in SEHM lab",
 				"label": "SEHM lab accelerometer Z axis (Star)"
 			},
-			"arces-monitor:5CCF7F15676D-temperature": {
+			"http://a.uri/5CCF7F15676D-temperature": {
 				"unit": "unit:DegreeCelsius",
-				"location": "arces-monitor:Mars_Server_Rack",
+				"location": "http://a.uri/Mars_Server_Rack",
 				"comment": "Temperatura zona rack sala server Toffano",
 				"label": "Server rack zone temperature (Mars)"
 			},
-			"arces-monitor:5CCF7F15676D-humidity": {
+			"http://a.uri/5CCF7F15676D-humidity": {
 				"unit": "unit:Percent",
-				"location": "arces-monitor:Mars_Server_Rack",
+				"location": "http://a.uri/Mars_Server_Rack",
 				"comment": "Umidità zona rack sala server Toffano",
 				"label": "Server rack zone humidity (Mars)"
 			},
-			"arces-monitor:5CCF7F1B599E-temperature": {
+			"http://a.uri/5CCF7F1B599E-temperature": {
 				"unit": "unit:DegreeCelsius",
-				"location": "arces-monitor:Mars_Garden",
+				"location": "http://a.uri/Mars_Garden",
 				"comment": "Temperatura esterna Toffano",
 				"label": "External temperature (Mars)"
 			},
-			"arces-monitor:5CCF7F1B599E-humidity": {
+			"http://a.uri/5CCF7F1B599E-humidity": {
 				"unit": "unit:Percent",
-				"location": "arces-monitor:Mars_Garden",
+				"location": "http://a.uri/Mars_Garden",
 				"comment": "Umidità esterna Toffano",
 				"label": "External humidity (Mars)"
 			},
-			"arces-monitor:5CCF7F151DC9-temperature": {
+			"http://a.uri/5CCF7F151DC9-temperature": {
 				"unit": "unit:DegreeCelsius",
-				"location": "arces-monitor:Mars_Server_Room",
+				"location": "http://a.uri/Mars_Server_Room",
 				"comment": "Temperatura interna sala server Toffano",
 				"label": "Near window temperature (Mars)"
 			},
-			"arces-monitor:5CCF7F1B58AC-temperature": {
+			"http://a.uri/5CCF7F1B58AC-temperature": {
 				"unit": "unit:DegreeCelsius",
-				"location": "arces-monitor:Star_Server_Room",
+				"location": "http://a.uri/Star_Server_Room",
 				"comment": "Temperatura zona rack sala server Pepoli",
 				"label": "Server rack zone temperature (Star)"
 			},
-			"arces-monitor:5CCF7F1B58AC-humidity": {
+			"http://a.uri/5CCF7F1B58AC-humidity": {
 				"unit": "unit:Percent",
-				"location": "arces-monitor:Star_Server_Room",
+				"location": "http://a.uri/Star_Server_Room",
 				"comment": "Umidità zona rack sala server Pepoli",
 				"label": "Server rack zone humidity (Star)"
 			},
-			"arces-monitor:swamp_devices_moisture1_up_Moisture_Signal_to_Supply_Perc": {
+			"http://a.uri/swamp_devices_moisture1_up_Moisture_Signal_to_Supply_Perc": {
 				"unit": "unit:Percent",
 				"location": "swamp:BertacchiniSoilProbe",
 				"comment": "Soil moisture sensor provided by SWAMP brasilian partner. The node communicates with LoRa.",
 				"label": "Soil moisture (SWAMP sensor)"
 			},
-			"arces-monitor:swamp_devices_moisture1_up_Moisture_Supply_Voltage": {
+			"http://a.uri/swamp_devices_moisture1_up_Moisture_Supply_Voltage": {
 				"unit": "unit:Volt",
 				"location": "swamp:BertacchiniSoilProbe",
 				"comment": "Soil moisture sensor provided by SWAMP brasilian partner. The node communicates with LoRa.",
 				"label": "Sensor supply voltage (SWAMP sensor)"
 			},
-			"arces-monitor:swamp_devices_moisture1_up_Battery_Level": {
+			"http://a.uri/swamp_devices_moisture1_up_Battery_Level": {
 				"unit": "unit:Percent",
 				"location": "swamp:BertacchiniSoilProbe",
 				"comment": "Soil moisture sensor provided by SWAMP brasilian partner. The node communicates with LoRa.",
 				"label": "Battery voltage (SWAMP sensor)"
-			}
+			},
+			"http://a.uri/transmission_example_devices_new_device_up_sensor_1_Temperature": {
+				"unit": "unit:DegreeCelsius",
+				"location": "http://a.uri/Test",
+				"comment": "Temperatura",
+				"label": "Temperatura sensore 1"
+			},
+			"http://a.uri/transmission_example_devices_new_device_up_sensor_2_Temperature": {
+				"unit": "unit:DegreeCelsius",
+				"location": "http://a.uri/Test",
+				"comment": "Temperatura",
+				"label": "Temperatura sensore 2"
+			},
+			"http://a.uri/transmission_example_devices_new_device_up_sensor_6_Temperature": {
+				"unit": "unit:DegreeCelsius",
+				"location": "http://a.uri/Test",
+				"comment": "Temperatura",
+				"label": "Temperatura sensore 6"
+			},
+			"http://a.uri/transmission_example_devices_new_device_up_sensor_3_Temperature": {
+				"unit": "unit:DegreeCelsius",
+				"location": "http://a.uri/Test",
+				"comment": "Temperatura",
+				"label": "Temperatura sensore 3"
+			},
+			"http://a.uri/transmission_example_devices_new_device_up_sensor_4_Temperature": {
+				"unit": "unit:DegreeCelsius",
+				"location": "http://a.uri/Test",
+				"comment": "Temperatura",
+				"label": "Temperatura sensore 4"
+			},
+			"http://a.uri/transmission_example_devices_new_device_up_sensor_5_Temperature": {
+				"unit": "unit:DegreeCelsius",
+				"location": "http://a.uri/Test",
+				"comment": "Temperatura",
+				"label": "Temperatura sensore 5"
+			} 			
 		}
 	}
 }

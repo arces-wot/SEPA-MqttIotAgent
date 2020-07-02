@@ -10,9 +10,7 @@ import it.unibo.arces.wot.sepa.commons.exceptions.SEPABindingsException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPAPropertiesException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPAProtocolException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPASecurityException;
-import it.unibo.arces.wot.sepa.commons.response.ErrorResponse;
-import it.unibo.arces.wot.sepa.commons.security.SEPASecurityManager;
-import it.unibo.arces.wot.sepa.commons.sparql.ARBindingsResults;
+import it.unibo.arces.wot.sepa.commons.security.ClientSecurityManager;
 import it.unibo.arces.wot.sepa.commons.sparql.Bindings;
 import it.unibo.arces.wot.sepa.commons.sparql.BindingsResults;
 import it.unibo.arces.wot.sepa.pattern.Consumer;
@@ -23,7 +21,7 @@ public class MqttAdapterPool extends Consumer {
 
 	private HashMap<String,MqttAdapter> adapters = new HashMap<String,MqttAdapter>();
 
-	public MqttAdapterPool(JSAP appProfile, SEPASecurityManager sm)
+	public MqttAdapterPool(JSAP appProfile, ClientSecurityManager sm)
 			throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, IOException, SEPABindingsException {
 		super(appProfile, "MQTT_BROKERS", sm);
 		
@@ -39,10 +37,6 @@ public class MqttAdapterPool extends Consumer {
 			} catch (IOException e) {
 				logger.warn(e.getMessage());
 			}
-	}
-	
-	@Override
-	public void onResults(ARBindingsResults results) {
 	}
 
 	@Override
@@ -89,26 +83,6 @@ public class MqttAdapterPool extends Consumer {
 			adapters.remove(String.format(url+":%d", port));
 		}
 
-	}
-
-	@Override
-	public void onBrokenConnection() {
-		logger.error("Broken connection");
-	}
-
-	@Override
-	public void onError(ErrorResponse errorResponse) {
-		logger.error(errorResponse);
-	}
-
-	@Override
-	public void onSubscribe(String spuid, String alias) {
-		logger.info("Subscribed. SPUID: "+spuid+" alias: "+alias);
-	}
-
-	@Override
-	public void onUnsubscribe(String spuid) {
-		logger.info("Unsubscribed. SPUID: "+spuid);
 	}
 
 	@Override

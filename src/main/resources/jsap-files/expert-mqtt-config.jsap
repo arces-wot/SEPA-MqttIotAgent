@@ -1,40 +1,4 @@
 {
-	"host": "localhost",
-	"oauth": {
-		"enable": false,
-		"register": "https://localhost:8443/oauth/register",
-		"tokenRequest": "https://localhost:8443/oauth/token"
-	},
-	"sparql11protocol": {
-		"protocol": "http",
-		"port": 8000,
-		"query": {
-			"path": "/query",
-			"method": "POST",
-			"format": "JSON"
-		},
-		"update": {
-			"path": "/update",
-			"method": "POST",
-			"format": "JSON"
-		}
-	},
-	"sparql11seprotocol": {
-		"protocol": "ws",
-		"availableProtocols": {
-			"ws": {
-				"port": 9000,
-				"path": "/subscribe"
-			},
-			"wss": {
-				"port": 9443,
-				"path": "/secure/subscribe"
-			}
-		}
-	},
-	"graphs": {
-		
-	},
 	"namespaces": {
 		"schema": "http://schema.org/",
 		"rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
@@ -49,12 +13,9 @@
 		"wgs84_pos": "http://www.w3.org/2003/01/geo/wgs84_pos#",
 		"gn": "http://www.geonames.org/ontology#"
 	},
-	"extended": {
-		
-	},
 	"updates": {
 		"ADD_MQTT_MAPPING": {
-			"sparql": "WITH <http://wot.arces.unibo.it/mqtt> DELETE {?mapping ?p ?o} INSERT {_:mapping rdf:type mqtt:Mapping ; mqtt:observation ?observation ; mqtt:topic ?topic} WHERE {OPTIONAL{?mapping rdf:type mqtt:Mapping ; mqtt:observation ?observation ; ?p ?o}}",
+			"sparql": "WITH <http://wot.arces.unibo.it/mqtt> INSERT {_:mapping rdf:type mqtt:Mapping ; mqtt:observation ?observation ; mqtt:topic ?topic} WHERE {}",
 			"forcedBindings": {
 				"topic": {
 					"type": "literal",
@@ -115,7 +76,7 @@
 			}
 		},
 		"ADD_MQTT_BROKER": {
-			"sparql": "WITH <http://wot.arces.unibo.it/mqtt> DELETE {?broker mqtt:url ?url ; rdf:type mqtt:Broker ; mqtt:port ?port ; mqtt:user ?username ; mqtt:password ?password ; mqtt:sslProtocol ?sslProtocol ; mqtt:sslCA ?caFile ; mqtt:clientId ?clientId} INSERT {_:broker mqtt:url ?url ; rdf:type mqtt:Broker ; mqtt:port ?port ; mqtt:user ?username ; mqtt:password ?password ; mqtt:sslProtocol ?sslProtocol ; mqtt:sslCA ?caFile ; mqtt:clientId ?clientId} WHERE {OPTIONAL {?broker mqtt:url ?url ; rdf:type mqtt:Broker ; mqtt:port ?port ; mqtt:user ?username ; mqtt:password ?password ; mqtt:sslProtocol ?sslProtocol ; mqtt:sslCA ?caFile ; mqtt:clientId ?clientId} }",
+			"sparql": "WITH <http://wot.arces.unibo.it/mqtt> INSERT {_:broker mqtt:url ?url ; rdf:type mqtt:Broker ; mqtt:port ?port ; mqtt:user ?username ; mqtt:password ?password ; mqtt:sslProtocol ?sslProtocol ; mqtt:sslCA ?caFile ; mqtt:clientId ?clientId} WHERE {}",
 			"forcedBindings": {
 				"url": {
 					"type": "literal",
@@ -149,7 +110,7 @@
 			}
 		},
 		"ADD_TOPIC_TO_MQTT_BROKER": {
-			"sparql": "WITH <http://wot.arces.unibo.it/mqtt> INSERT {?broker mqtt:topic ?topic} WHERE {?broker rdf:type mqtt:Broker ; mqtt:url ?url ; mqtt:port ?port}",
+			"sparql": "WITH <http://wot.arces.unibo.it/mqtt> INSERT {?broker mqtt:topic ?topic} WHERE {?broker rdf:type mqtt:Broker ; mqtt:url ?url ; mqtt:port ?port ; mqtt:user ?user}",
 			"forcedBindings": {
 				"url": {
 					"type": "literal",
@@ -163,11 +124,15 @@
 				"topic": {
 					"type": "literal",
 					"value": "#"
+				},
+				"user": {
+					"type": "literal",
+					"value": ""
 				}
 			}
 		},
 		"REMOVE_MQTT_BROKER": {
-			"sparql": "WITH <http://wot.arces.unibo.it/mqtt> DELETE {?broker ?p ?o} WHERE {?broker rdf:type mqtt:Broker ; mqtt:url ?url ; mqtt:port ?port ; ?p ?o }",
+			"sparql": "WITH <http://wot.arces.unibo.it/mqtt> DELETE {?broker ?p ?o} WHERE {?broker rdf:type mqtt:Broker ; mqtt:url ?url ; mqtt:port ?port ; mqtt:user ?user ; ?p ?o }",
 			"forcedBindings": {
 				"url": {
 					"type": "literal",
@@ -177,6 +142,10 @@
 					"type": "literal",
 					"value": 52877,
 					"datatype": "xsd:integer"
+				},
+				"user": {
+					"type": "literal",
+					"value": ""
 				}
 			}
 		},
@@ -187,7 +156,7 @@
 			"sparql": "WITH <http://wot.arces.unibo.it/observation/history> DELETE {?s ?p ?o} WHERE {?s ?p ?o}"
 		},
 		"CLEAR_MQTT_MESSAGE_GRAPH": {
-			"sparql": "WITH <http://wot.arces.unibo.it/mqtt/message> DELETE {?s ?p ?o} WHERE {?s ?p ?o}"
+			"sparql": "DELETE {GRAPH <http://wot.arces.unibo.it/mqtt/message> {?message rdf:type mqtt:Message ; mqtt:value ?value ; mqtt:topic ?topic ; mqtt:hasBroker ?broker;  time:inXSDDateTimeStamp ?timestamp}} WHERE {GRAPH <http://wot.arces.unibo.it/mqtt/message> {?message rdf:type mqtt:Message ; mqtt:value ?value ; mqtt:topic ?topic ; mqtt:hasBroker ?broker;  time:inXSDDateTimeStamp ?timestamp}}"
 		},
 		"CLEAR_CONTEXT_GRAPH": {
 			"sparql": "WITH <http://wot.arces.unibo.it/context> DELETE {?s ?p ?o} WHERE {?s ?p ?o}"

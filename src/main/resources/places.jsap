@@ -1,11 +1,19 @@
 {
+	"namespaces": {
+		"rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+		"rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+		"xsd": "http://www.w3.org/2001/XMLSchema#",
+		"schema": "http://schema.org/",
+		"mqtt": "http://wot.arces.unibo.it/mqtt#",
+		"time": "http://www.w3.org/2006/time#"
+	},
 	"updates" : {
 		"REMOVE_PLACE": {
 			"sparql": "WITH <http://wot.arces.unibo.it/context> DELETE {?place rdf:type schema:Place; schema:name ?name ;  schema:GeoCoordinates ?coordinate . ?coordinate schema:latitude ?lat ; schema:longitude ?lon} WHERE {?place rdf:type schema:Place; schema:name ?name ;  schema:GeoCoordinates ?coordinate . ?coordinate schema:latitude ?lat ; schema:longitude ?lon}",
 			"forcedBindings": {
 				"place": {
 					"type": "uri",
-					"value": "arces-monitor:Mars"
+					"value": "http://a.uri/Mars"
 				}
 			}
 		},
@@ -14,7 +22,7 @@
 			"forcedBindings": {
 				"place": {
 					"type": "uri",
-					"value": "arces-monitor:Mars"
+					"value": "http://a.uri/Mars"
 				},
 				"name": {
 					"type": "literal",
@@ -32,16 +40,29 @@
 				}
 			}
 		},
+		"UPDATE_PLACE_NAME": {
+			"sparql": "DELETE {GRAPH <http://wot.arces.unibo.it/context> {?place schema:name ?oldname}} INSERT {GRAPH <http://wot.arces.unibo.it/context> {?place schema:name ?name}} WHERE {GRAPH <http://wot.arces.unibo.it/context> {?place schema:name ?oldname}}",
+			"forcedBindings": {
+				"place": {
+					"type": "uri",
+					"value": "http://a.uri/Mars"
+				},
+				"name": {
+					"type": "literal",
+					"value": "Mars"
+				}
+			}
+		},
 		"LINK_PLACES": {
 			"sparql": "INSERT DATA { GRAPH <http://wot.arces.unibo.it/context> {?root schema:containsPlace ?child . ?child schema:containedInPlace ?root }}",
 			"forcedBindings": {
 				"root": {
 					"type": "uri",
-					"value": "arces-monitor:rootPlace"
+					"value": "http://a.uri/rootPlace"
 				},
 				"child": {
 					"type": "uri",
-					"value": "arces-monitor:childPlace"
+					"value": "http://a.uri/childPlace"
 				}
 			}
 		},
@@ -50,11 +71,11 @@
 			"forcedBindings": {
 				"root": {
 					"type": "uri",
-					"value": "arces-monitor:rootPlace"
+					"value": "http://a.uri/rootPlace"
 				},
 				"child": {
 					"type": "uri",
-					"value": "arces-monitor:childPlace"
+					"value": "http://a.uri/childPlace"
 				}
 			}
 		}
@@ -77,7 +98,7 @@
 			"forcedBindings": {
 				"root": {
 					"type": "uri",
-					"value": "arces-monitor:Mars"
+					"value": "http://a.uri/Mars"
 				}
 			}
 		},
@@ -116,48 +137,48 @@
 				"lat": 44.776586,
 				"lon": 10.717520
 			},
-			"arces-monitor:Mars": {
+			"http://a.uri/Mars": {
 				"name": "Mars",
 				"lat": 44.489942,
 				"lon": 11.356873,
 				"childs": [
-					"arces-monitor:Mars_Server_Room",
-					"arces-monitor:Mars_Garden"
+					"http://a.uri/Mars_Server_Room",
+					"http://a.uri/Mars_Garden"
 				]
 			},
-			"arces-monitor:Mars_Server_Room": {
+			"http://a.uri/Mars_Server_Room": {
 				"name": "Server room (Mars)",
 				"lat": 44.489942,
 				"lon": 11.356873,
 				"childs": [
-					"arces-monitor:Mars_Server_Rack"
+					"http://a.uri/Mars_Server_Rack"
 				]
 			},
-			"arces-monitor:Mars_Garden": {
+			"http://a.uri/Mars_Garden": {
 				"name": "Garden (Mars)",
 				"lat": 44.489942,
 				"lon": 11.356873
 			},
-			"arces-monitor:Mars_Server_Rack": {
+			"http://a.uri/Mars_Server_Rack": {
 				"name": "Server rack (Mars)",
 				"lat": 44.489942,
 				"lon": 11.356873
 			},
-			"arces-monitor:Star": {
+			"http://a.uri/Star": {
 				"name": "Star",
 				"lat": 44.492443,
 				"lon": 11.330382,
 				"childs": [
-					"arces-monitor:Star_SEHM_Lab",
-					"arces-monitor:Star_Server_Room"
+					"http://a.uri/Star_SEHM_Lab",
+					"http://a.uri/Star_Server_Room"
 				]
 			},
-			"arces-monitor:Star_SEHM_Lab": {
+			"http://a.uri/Star_SEHM_Lab": {
 				"name": "SEHM lab (Star)",
 				"lat": 44.492443,
 				"lon": 11.330382
 			},
-			"arces-monitor:Star_Server_Room": {
+			"http://a.uri/Star_Server_Room": {
 				"name": "Server room (Star)",
 				"lat": 44.492443,
 				"lon": 11.330382

@@ -17,19 +17,20 @@ import it.unibo.arces.wot.sepa.commons.exceptions.SEPAPropertiesException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPAProtocolException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPASecurityException;
 import it.unibo.arces.wot.sepa.commons.response.Response;
-import it.unibo.arces.wot.sepa.commons.security.SEPASecurityManager;
+import it.unibo.arces.wot.sepa.commons.security.ClientSecurityManager;
 import it.unibo.arces.wot.sepa.commons.sparql.RDFTermLiteral;
 import it.unibo.arces.wot.sepa.commons.sparql.RDFTermURI;
 import it.unibo.arces.wot.sepa.pattern.JSAP;
 import it.unibo.arces.wot.sepa.pattern.Producer;
 
-import it.unibo.arces.wot.sepa.apps.mqtt.mappers.*;
-
 public class MqttIotAgent {
 	private static final Logger logger = LogManager.getLogger();
 	
-	private static void clearAll(JSAP app, SEPASecurityManager sm) throws SEPAProtocolException, SEPASecurityException,
+	private static void clearAll(JSAP app, ClientSecurityManager sm) throws SEPAProtocolException, SEPASecurityException,
 			SEPAPropertiesException, SEPABindingsException, IOException {
+		
+		app.read("clear.jsap", true);
+		
 		// Clear all
 		Producer client = null;
 		client = new Producer(app, "CLEAR_MQTT_GRAPH", sm);
@@ -49,32 +50,17 @@ public class MqttIotAgent {
 		client.close();
 	}
 
-//	private static void clearHistory(JSAP app, SEPASecurityManager sm) throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException, IOException {
-//		// Clear all
-//		Producer client = null;
-//		client = new Producer(app, "CLEAR_HISTORY_GRAPH", sm);
-//		//client.update(); DISABLED
-//		client.close();
-//	}
-
 	private static void printUsage() {
 		System.out.println("Usage:");
 		System.out.println("    java -jar MqttIoTAgent.jar");
 		System.out.println("Options:");
-		System.out.println("   -nolog: do not log observations");
+//		System.out.println("   -nolog: do not log observations");
 		System.out.println("   -observations: init observations from observations.jsap");
 		System.out.println("   -places: init places from places.jsap");
 		System.out.println("   -clear: clear all (history excluded)");
 		System.out.println("   -adapters: init the adapters from adapters.jsap");
 		System.out.println("   -mappings: init the mappings from mappings.jsap");
 		System.out.println("   -init: clear and init all");
-	}
-
-	private static boolean doLog(String[] args) {
-		for (int i = 0; i < args.length; i++)
-			if (args[i].equals("-nolog"))
-				return false;
-		return true;
 	}
 
 	private static boolean init(String[] args) {
@@ -119,14 +105,7 @@ public class MqttIotAgent {
 		return false;
 	}
 
-//	private static boolean clearHistory(String[] args) {
-//		for (int i = 0; i < args.length; i++)
-//			if (args[i].equals("-clear-history"))
-//				return true;
-//		return false;
-//	}
-
-	private static void addAdapters(JSAP app, SEPASecurityManager sm) throws IOException {
+	private static void addAdapters(JSAP app, ClientSecurityManager sm) throws IOException, SEPAPropertiesException, SEPASecurityException {
 		logger.info("Parse adapters");
 
 		app.read("adapters.jsap", true);
@@ -134,10 +113,10 @@ public class MqttIotAgent {
 		Producer client = null;
 
 		if (app.getExtendedData().has("adapters")) {
-			JsonArray adapters = app.getExtendedData().getAsJsonObject("adapters").getAsJsonArray("mqtt");
-			for (JsonElement adapter : adapters) {
+			JsonObject adapters = app.getExtendedData().getAsJsonObject("adapters").getAsJsonObject("mqtt");
+			for (Entry<String, JsonElement> adapter : adapters.entrySet()) {
 				try {
-					JsonObject adapt = adapter.getAsJsonObject();
+					JsonObject adapt = adapter.getValue().getAsJsonObject();
 
 					client = new Producer(app, "ADD_MQTT_BROKER", sm);
 
@@ -208,7 +187,7 @@ public class MqttIotAgent {
 		}
 	}
 
-	private static void addMappings(JSAP app, SEPASecurityManager sm) throws FileNotFoundException, IOException {
+	private static void addMappings(JSAP app, ClientSecurityManager sm) throws FileNotFoundException, IOException, SEPAPropertiesException, SEPASecurityException {
 		logger.info("Parse mappings");
 
 		app.read("mappings.jsap", true);
@@ -285,7 +264,7 @@ public class MqttIotAgent {
 		}
 	}
 
-	private static void addPlaces(JSAP app, SEPASecurityManager sm) throws FileNotFoundException, IOException {
+	private static void addPlaces(JSAP app, ClientSecurityManager sm) throws FileNotFoundException, IOException, SEPAPropertiesException, SEPASecurityException {
 		logger.info("Parse places");
 
 		app.read("places.jsap", true);
@@ -388,7 +367,7 @@ public class MqttIotAgent {
 		}
 	}
 
-	private static void addObservations(JSAP app, SEPASecurityManager sm) throws FileNotFoundException, IOException {
+	private static void addObservations(JSAP app, ClientSecurityManager sm) throws FileNotFoundException, IOException, SEPAPropertiesException, SEPASecurityException {
 		logger.info("Parse observations");
 
 		app.read("observations.jsap", true);
@@ -461,7 +440,7 @@ public class MqttIotAgent {
 	public static void main(String[] args) throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException, IOException {		
 		printUsage();
 
-		SEPASecurityManager sm = null;
+		ClientSecurityManager sm = null;
 
 		JSAP app = null;
 		try {
@@ -475,11 +454,7 @@ public class MqttIotAgent {
 		Map<String, String> env = System.getenv();
 		if (env.containsKey("SEPA_HOST"))
 			app.setHost(env.get("SEPA_HOST"));
-
-//		// Clear history
-//		if (clearHistory(args))
-//			clearHistory(app, sm);
-
+		
 		// Init all
 		if (init(args)) {
 			clearAll(app, sm);
@@ -546,42 +521,28 @@ public class MqttIotAgent {
 			System.exit(-1);
 		}
 
-		// History logging
-		ObservationLogger logObservation = null;
-		if (doLog(args)) {
-			logger.info("Historical data logging enabled");
-			logger.info("Create observation logger");
-			try {
-				logObservation = new ObservationLogger(app, sm);
-				logObservation.subscribe(5000);
-			} catch (SEPASecurityException | SEPAPropertiesException | SEPAProtocolException
-					| SEPABindingsException e) {
-				logger.fatal("Exception on creating ObservationLogger " + e.getMessage());
-				System.exit(-1);
-			}
-		}
-
-		// Mappers
-		logger.info("Create default mapper");
-		DefaultMapper defaultMapper = null;
-		try {
-			defaultMapper = new DefaultMapper(app, sm);
-		} catch (SEPAProtocolException | SEPASecurityException | SEPAPropertiesException | SEPABindingsException e1) {
-			logger.error("Failed to create default mapper " + e1.getMessage());
-		}
-
-//		GuaspariMapper jsonMapper = null;
+//		// Default mapper
+//		logger.info("Create default mapper");
+//		DefaultMapper defaultMapper = null;
 //		try {
-//			jsonMapper = new GuaspariMapper(app, sm);
-//		} catch (SEPAProtocolException | SEPASecurityException | SEPAPropertiesException | SEPABindingsException e1) {
-//			logger.error("Failed to create json mapper " + e1.getMessage());
+//			defaultMapper = new DefaultMapper(app, sm);
+//		} catch (SEPAProtocolException | SEPASecurityException | SEPAPropertiesException | SEPABindingsException | InterruptedException e1) {
+//			logger.error("Failed to create default mapper " + e1.getMessage());
 //		}
-//
-//		WizzilabMapper wizziMapper = null;
-//		try {
-//			wizziMapper = new WizzilabMapper(app, sm);
-//		} catch (SEPAProtocolException | SEPASecurityException | SEPAPropertiesException | SEPABindingsException e1) {
-//			logger.error("Failed to create json mapper " + e1.getMessage());
+		
+		// History logging
+//		ObservationLogger logObservation = null;
+//		if (doLog(args)) {
+//			logger.info("Historical data logging enabled");
+//			logger.info("Create observation logger");
+//			try {
+//				logObservation = new ObservationLogger(app, sm);
+//				logObservation.subscribe(5000);
+//			} catch (SEPASecurityException | SEPAPropertiesException | SEPAProtocolException
+//					| SEPABindingsException e) {
+//				logger.fatal("Exception on creating ObservationLogger " + e.getMessage());
+//				System.exit(-1);
+//			}
 //		}
 
 		// Started
@@ -604,33 +565,19 @@ public class MqttIotAgent {
 			logger.error(e.getMessage());
 		}
 
-		try {
-			if (defaultMapper != null)
-				defaultMapper.close();
-		} catch (IOException e) {
-			logger.warn(e.getMessage());
-		}
-
 //		try {
-//			if (jsonMapper != null)
-//				jsonMapper.close();
-//		} catch (IOException e) {
-//			logger.warn(e.getMessage());
-//		}
-//
-//		try {
-//			if (wizziMapper != null)
-//				wizziMapper.close();
+//			if (defaultMapper != null)
+//				defaultMapper.close();
 //		} catch (IOException e) {
 //			logger.warn(e.getMessage());
 //		}
 
-		try {
-			if (logObservation != null)
-				logObservation.close();
-		} catch (IOException e) {
-			logger.warn(e.getMessage());
-		}
+//		try {
+//			if (logObservation != null)
+//				logObservation.close();
+//		} catch (IOException e) {
+//			logger.warn(e.getMessage());
+//		}
 
 		System.exit(1);
 	}

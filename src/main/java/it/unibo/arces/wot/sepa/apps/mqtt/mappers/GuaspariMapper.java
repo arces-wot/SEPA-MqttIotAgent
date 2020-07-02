@@ -3,8 +3,6 @@ package it.unibo.arces.wot.sepa.apps.mqtt.mappers;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -13,8 +11,7 @@ import it.unibo.arces.wot.sepa.commons.exceptions.SEPABindingsException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPAPropertiesException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPAProtocolException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPASecurityException;
-import it.unibo.arces.wot.sepa.commons.security.SEPASecurityManager;
-import it.unibo.arces.wot.sepa.pattern.JSAP;
+import it.unibo.arces.wot.sepa.commons.security.ClientSecurityManager;
 
 /**
  * Guaspari soil moisture sensors
@@ -24,6 +21,11 @@ import it.unibo.arces.wot.sepa.pattern.JSAP;
  * application/1/device/754366e02ff23515/rx
  * {"applicationID":"1","applicationName":"Guaspari","deviceName":"EndNode1001","devEUI":"754366e02ff23515","txInfo":{"frequency":915200000,"dr":4},"adr":false,"fCnt":3338,"fPort":1,"data":"U3wxOTA2MTIxMzMwfEl8MTAwMXxIMXwzMzZ8SDJ8MzMzfEgzfDMzMg=="}
  * 
+ 
+ application/1/device/0012f80000000641/rx 
+ {"applicationID":"1","applicationName":"Guaspari","deviceName":"EndNode1003","devEUI":"0012f80000000641","txInfo":{"frequency":916400000,"dr":5},"adr":true,"fCnt":8556,"fPort":1,"data":"U3wyMDAxMzAwNzIwfEl8MTAwM3xIMXw0Mzh8SDJ8Mzg3fEgzfDMwOHxUMXwyNjU="}
+ 
+  
  * mosquitto_sub --host 177.104.61.17 --port 1883 --verbose --topic '#'
  * 
  * 1) 10 mins ==> moisture S|1905130630|I|1002|H1|338|H2|331|H3|331
@@ -36,28 +38,42 @@ import it.unibo.arces.wot.sepa.pattern.JSAP;
  * mV ==> soil moisture °C ==> temperature
  * 
  * {"applicationID":"1","applicationName":"Guaspari","deviceName":"EndNode1002","devEUI":"1bc0f73caf72d467","txInfo":{"frequency":916400000,"dr":4},"adr":false,"fCnt":8836,"fPort":1,"data":"U3wxOTA2MjQwMDIwfEl8MTAwMnxIMXwzMzh8SDJ8MzMzfEgzfDMzMQ=="}
+ *
+ * Message format as 30-10-2019
+ * 
+ * application/1/device/0012f80000000614/rx {"applicationID":"1","applicationName":"Guaspari","deviceName":"EndNode1001","devEUI":"0012f80000000614","txInfo":{"frequency":915600000,"dr":2},"adr":true,"fCnt":11856,"fPort":1,"data":"U3wxOTEwMzAxMzEwfEl8MTAwMXxIMXw0NjN8SDJ8MzQ0fEgzfDMyMHxUMXwyNjg="}
+ * application/1/device/0012f80000000615/rx {"applicationID":"1","applicationName":"Guaspari","deviceName":"EndNode1002","devEUI":"0012f80000000615","txInfo":{"frequency":915600000,"dr":5},"adr":true,"fCnt":16203,"fPort":1,"data":"U3wxOTEwMzAxMzEwfEl8MTAwMnxIMXwyODl8SDJ8Mzk0fEgzfDUyNHxUMXwzMTg="}
+ * 
+ * S|1910301230|I|1002|H1|289|H2|393|H3|524|T1|313 
+ *
  */
 public class GuaspariMapper extends MqttMapper {
-
 	public static void main(String[] args) throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException, InterruptedException, IOException{			
-		GuaspariMapper mapper = new GuaspariMapper(new JSAP("mqtt.jsap"),null);
+		GuaspariMapper mapper = new GuaspariMapper();
+		
+		mapper.start();
 		
 		synchronized(mapper) {
 			mapper.wait();
 		}
-		
-		mapper.close();		
 	}
 	
-	public GuaspariMapper(JSAP appProfile, SEPASecurityManager sm)
-			throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException {
-		super(appProfile, sm, "mqtt:GuaspariMapper");
+	public GuaspariMapper(ClientSecurityManager sm)
+			throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException, InterruptedException {
+		super(sm, "mqtt:GuaspariMapper");
+	}
+	
+	public GuaspariMapper()
+			throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException, InterruptedException {
+		super("mqtt:GuaspariMapper");
 	}
 	
 	@Override
 	protected ArrayList<String[]> map(String topic, String value) {
 		ArrayList<String[]> ret = new ArrayList<String[]>();
 
+		logger.debug(mapperUri+" Mapping: "+topic+" "+value);
+		
 		JsonObject json = new JsonParser().parse(value).getAsJsonObject();
 
 		// Topic
@@ -67,27 +83,27 @@ public class GuaspariMapper extends MqttMapper {
 		byte[] decoded = Base64.getDecoder().decode(json.get("data").getAsString());
 		String payload = new String(decoded);
 
-		for (Pattern p : patterns) {
-			Matcher m = p.matcher(payload);
-
-			if (!m.matches())
-				continue;
-
-			int i = 1;
-
-			try {
-				while (m.group("value" + i) != null) {
-					String observation = topic2observation.get(newTopic + "/" + m.group("id" + i));
-					if (observation == null) {
-						logger.warn("Topic NOT found: " + newTopic + "/" + m.group("id" + i));
-					} else {
-						String newValue = m.group("value" + i);
-						ret.add(new String[] { observation, newValue });
-					}
-					i++;
+		String[] tokens = payload.split("\\|");
+		for (int i=0; i < tokens.length ; i = i + 2) {
+			if (tokens[i].equals("S")) continue;
+			if (tokens[i].equals("I")) continue;
+			
+			String observation = topic2observation.get(newTopic + "/" + tokens[i]);
+			
+			if (observation == null) {
+				logger.warn(mapperUri+" Observation NOT FOUND: " + newTopic + "/" + tokens[i]);
+			} else {
+				// Parsing value
+				String newValue = null;
+				if (tokens[i].startsWith("T")) {
+					newValue = String.format("%.1f", Float.parseFloat(tokens[i+1]) / 10);
 				}
-			} catch (IllegalArgumentException e1) {
-				logger.debug("No more values: " + e1.getMessage());
+				else {
+					newValue = tokens[i+1];
+					
+				}
+				ret.add(new String[] { observation, newValue });
+				logger.debug(mapperUri+" NEW observation: "+observation+ " Value: "+newValue);
 			}
 		}
 

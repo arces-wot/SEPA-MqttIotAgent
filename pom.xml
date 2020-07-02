@@ -4,11 +4,14 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>it.unibo.arces.wot</groupId>
-	<artifactId>sepa.apps.mqtt.MqttIotAgent</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<!-- <artifactId>sepa.apps.mqtt.MqttIotAgent</artifactId> -->
+	<artifactId>apps.mqtt.MqttIotAgent</artifactId>
+	<version>0.9.10</version>
 	<packaging>jar</packaging>
 
-	<name>sepa.apps.mqtt.MqttIotAgent</name>
+	<!-- <name>sepa.apps.mqtt.MqttIotAgent</name> -->
+<!-- 	<name>SEPAMqqtIoTAgent</name> -->
+
 	<url>http://maven.apache.org</url>
 
 	<properties>
@@ -20,46 +23,112 @@
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.3</version>
+				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
-					<!-- Run shade goal on package phase -->
 					<execution>
+						<id>build-a</id>
+						<configuration>
+							<archive>
+								<manifest>
+									<mainClass>it.unibo.arces.wot.sepa.apps.mqtt.MqttIotAgent</mainClass>
+								</manifest>
+							</archive>
+							<descriptorRefs>
+								<descriptorRef>jar-with-dependencies</descriptorRef>
+							</descriptorRefs>
+							<!-- <appendAssemblyId>false</appendAssemblyId> -->
+							<finalName>MQTTIotAgent</finalName>
+						</configuration>
 						<phase>package</phase>
 						<goals>
-							<goal>shade</goal>
+							<goal>single</goal>
 						</goals>
+					</execution>
+					<execution>
+						<id>build-b</id>
 						<configuration>
-							<transformers>
-								<!-- add Main-Class to manifest file -->
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>it.unibo.arces.wot.sepa.apps.mqtt.MqttIotAgent</mainClass>
-								</transformer>
-							</transformers>
-							<filters>
-								<filter>
-									<artifact>*:*</artifact>
-									<excludes>
-										<exclude>META-INF/*.SF</exclude>
-										<exclude>META-INF/*.DSA</exclude>
-										<exclude>META-INF/*.RSA</exclude>
-									</excludes>
-								</filter>
-							</filters>
+							<archive>
+								<manifest>
+									<mainClass>it.unibo.arces.wot.sepa.apps.mqtt.ObservationLogger</mainClass>
+								</manifest>
+							</archive>
+							<descriptorRefs>
+								<descriptorRef>jar-with-dependencies</descriptorRef>
+							</descriptorRefs>
+							<!-- <appendAssemblyId>false</appendAssemblyId> -->
+							<finalName>ObservationLogger</finalName>
 						</configuration>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>build-c</id>
+						<configuration>
+							<archive>
+								<manifest>
+									<mainClass>it.unibo.arces.wot.sepa.apps.mqtt.mappers.LepidaMapper</mainClass>
+								</manifest>
+							</archive>
+							<descriptorRefs>
+								<descriptorRef>jar-with-dependencies</descriptorRef>
+							</descriptorRefs>
+							<!-- <appendAssemblyId>false</appendAssemblyId> -->
+							<finalName>LepidaMapper</finalName>
+						</configuration>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
 					</execution>
 				</executions>
 			</plugin>
+			<!-- <plugin> -->
+			<!-- <groupId>org.apache.maven.plugins</groupId> -->
+			<!-- <artifactId>maven-shade-plugin</artifactId> -->
+			<!-- <version>2.3</version> -->
+			<!-- <executions> -->
+			<!-- Run shade goal on package phase -->
+			<!-- <execution> -->
+			<!-- <phase>package</phase> -->
+			<!-- <goals> -->
+			<!-- <goal>shade</goal> -->
+			<!-- </goals> -->
+			<!-- <configuration> -->
+			<!-- <transformers> -->
+			<!-- add Main-Class to manifest file -->
+			<!-- <transformer -->
+			<!-- implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"> -->
+			<!-- <mainClass>it.unibo.arces.wot.sepa.apps.mqtt.MqttIotAgent</mainClass> -->
+			<!-- <mainClass>it.unibo.arces.wot.sepa.apps.mqtt.mappers.GuaspariMapper</mainClass> -->
+			<!-- </transformer> -->
+			<!-- </transformers> -->
+			<!-- <filters> -->
+			<!-- <filter> -->
+			<!-- <artifact>*:*</artifact> -->
+			<!-- <excludes> -->
+			<!-- <exclude>META-INF/*.SF</exclude> -->
+			<!-- <exclude>META-INF/*.DSA</exclude> -->
+			<!-- <exclude>META-INF/*.RSA</exclude> -->
+			<!-- </excludes> -->
+			<!-- </filter> -->
+			<!-- </filters> -->
+			<!-- </configuration> -->
+			<!-- </execution> -->
+			<!-- </executions> -->
+			<!-- </plugin> -->
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<configuration>
 					<tasks>
-						<copy
-							file="target/sepa.apps.mqtt.MqttIotAgent-0.0.1-SNAPSHOT.jar"
-							tofile="docker/sepa.apps.mqtt.MqttIotAgent-0.0.1-SNAPSHOT.jar" />
-						<copy file="target/base.jsap" tofile="docker/base.jsap" />
+						<copy todir="${basedir}/target">
+							<fileset dir="${basedir}/src/main/resources">
+								<exclude name="**/backup/*" />
+							</fileset>
+						</copy>
+						<!-- <copy file="src/main/resources/mqtt.jsap" -->
+						<!-- tofile="target/mqtt.jsap" /> -->
 					</tasks>
 				</configuration>
 				<executions>
@@ -68,29 +137,6 @@
 						<goals>
 							<goal>run</goal>
 						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>3.1.0</version>
-				<executions>
-					<execution>
-						<id>copy-resources</id>
-						<!-- here the phase you need -->
-						<phase>install</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${basedir}/target/</outputDirectory>
-							<resources>
-								<resource>
-									<directory>${basedir}/src/main/resources</directory>
-									<filtering>true</filtering>
-								</resource>
-							</resources>
-						</configuration>
 					</execution>
 				</executions>
 			</plugin>
@@ -130,7 +176,7 @@
 		<dependency>
 			<groupId>it.unibo.arces.wot</groupId>
 			<artifactId>client-api</artifactId>
-			<version>0-SNAPSHOT</version>
+			<version>0.9.10</version>
 		</dependency>
 	</dependencies>
 </project>

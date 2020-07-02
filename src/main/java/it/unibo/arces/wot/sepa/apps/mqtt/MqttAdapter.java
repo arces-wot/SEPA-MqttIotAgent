@@ -1,9 +1,8 @@
 package it.unibo.arces.wot.sepa.apps.mqtt;
 
 import java.io.IOException;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.IllegalFormatException;
 import java.util.Map.Entry;
 
 import org.apache.logging.log4j.LogManager;
@@ -18,6 +17,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.logging.LoggerFactory;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -25,9 +25,8 @@ import it.unibo.arces.wot.sepa.commons.exceptions.SEPABindingsException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPAPropertiesException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPAProtocolException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPASecurityException;
-import it.unibo.arces.wot.sepa.commons.response.ErrorResponse;
-import it.unibo.arces.wot.sepa.commons.security.SEPASecurityManager;
-import it.unibo.arces.wot.sepa.commons.sparql.ARBindingsResults;
+import it.unibo.arces.wot.sepa.commons.response.Response;
+import it.unibo.arces.wot.sepa.commons.security.ClientSecurityManager;
 import it.unibo.arces.wot.sepa.commons.sparql.Bindings;
 import it.unibo.arces.wot.sepa.commons.sparql.BindingsResults;
 import it.unibo.arces.wot.sepa.commons.sparql.RDFTermLiteral;
@@ -39,6 +38,7 @@ public class MqttAdapter extends Aggregator implements MqttCallbackExtended {
 
 	private MqttClient mqttClient;
 	private String serverURI;
+	private String serverUID;
 	private ArrayList<String> topics = new ArrayList<String>();
 	private ArrayList<String> topicsRemoved = new ArrayList<String>();
 
@@ -48,55 +48,96 @@ public class MqttAdapter extends Aggregator implements MqttCallbackExtended {
 	private Thread unsubThread;
 	private Thread connThread;
 
-	public static void main(String[] args) throws SEPASecurityException, InterruptedException, SEPAProtocolException, SEPAPropertiesException, SEPABindingsException, IOException {
-		// Wizzilab
-//		String url ="roger.wizzilab.com";
-//		int port = 8883;
-//		String clientId = "ffa574972ab9:1";
-//		String caCertFile = "/etc/ssl/cert.pem";
-//		String user = "ffa574972ab9";
-//		String password = "6e257b56172ea934d79ee1f5c2c1c7a9";
-//		String protocol = "SSL";
+	/**
+	 * The application assumes the ID of the adapter as argument. The adapter is selected from the JSAP as follows:
+	 * 
+	 * "extended": {
+		"adapters": {
+			"mqtt": {
+				"ID" : 	{
+					"url": "boswamp-2.arces.unibo.it",
+					"port": 8883,
+					"topics": ["transmission_example/devices/new_device/up"],
+					"sslProtocol": "SSL",
+					"caFile": "client_swamp.crt",
+					"username": "swamp",
+					"password": "arces"
+				}
+			}
+		}
+	 }
+	 * 
+	 * 
+	 * */
+	public static void main(String[] args) throws SEPASecurityException, InterruptedException, SEPAProtocolException,
+			SEPAPropertiesException, SEPABindingsException, IOException {
 
-		// TTN - Meter soil moisture
-		//Topic: transmission_example/devices/new_device/up
-		String url = "eu.thethings.network";
-		String user = "transmission_example";
-		String password = "ttn-account-v2.XHaR_oEYSO4MjbsLRh_63bf8Y7IwTp4dBCzlkWA-NM4";
-		int port = 1883;		
-		String clientId = null;
-		String caCertFile = null;
-		String protocol = null;
+		if (args.length != 1) {
+			logger.error("Missing arguments: adapter ID");
+			return;
+		}
+
+		JSAP jsap = new JSAP("mqtt.jsap");
 		
-		// MML
-//		String url ="giove.arces.unibo.it";
-//		int port = 52877;
-//		String clientId = null;
-//		String caCertFile = null;
-//		String user = null;
-//		String password = null;
-//		String protocol = null;
+		ClientSecurityManager security = (jsap.isSecure() ? new ClientSecurityManager(jsap.getAuthenticationProperties(), "sepa.jks",
+				"sepa2017"): null);
+
+		// Load adapter
+		jsap.read("adapters.jsap");
+		JsonObject config =  jsap.getExtendedData().getAsJsonObject("adapters").getAsJsonObject("mqtt").getAsJsonObject(args[0]);
 		
-		MqttAdapter clientAdapter = new MqttAdapter(new JSAP("mqtt.jsap"), new SEPASecurityManager("sepa.jks", "sepa2017", "sepa2017", null), url, port, clientId, user, password, protocol, caCertFile);
+		String url = config.get("url").getAsString();
+		int port = config.get("port").getAsInt();
 		
+		String user = (config.has("username") ? config.get("username").getAsString() : null);
+		String password = (config.has("password") ? config.get("password").getAsString() : null);	
+		String clientId = (config.has("clientId") ? config.get("clientId").getAsString() : null);
+		String caCertFile = (config.has("caFile") ? config.get("caFile").getAsString() : null);
+		String protocol = (config.has("sslProtocol") ? config.get("sslProtocol").getAsString() : null);
+		
+		MqttAdapter clientAdapter = new MqttAdapter(jsap, security, url, port, clientId, user, password, protocol,
+				caCertFile);
+
+		JsonArray topics = (config.has("topics") ? config.get("topics").getAsJsonArray() : null);
+		if (topics == null) clientAdapter.subscribe("#");
+		else {
+			for (JsonElement topic : topics) {
+				clientAdapter.subscribe(topic.getAsString());
+			}
+		}
+
 		synchronized (clientAdapter) {
-			clientAdapter.wait();	
+			clientAdapter.wait();
 		}
 		clientAdapter.close();
 	}
-	
+
 	public void enableMqttDebugging() {
 		LoggerFactory.setLogger(Logging.class.getName());
 	}
 
-	public MqttAdapter(JSAP appProfile, SEPASecurityManager sm, JsonObject sim)
+	public MqttAdapter(JSAP appProfile, ClientSecurityManager sm, JsonObject sim)
 			throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException {
 		super(appProfile, "MQTT_BROKER_TOPICS", "MQTT_MESSAGE", sm);
 
 		simulator(sim);
 	}
 
-	public MqttAdapter(JSAP appProfile, SEPASecurityManager sm, String url, int port, String clientId, String user,
+	public void subscribe(String topic) {
+		synchronized (topics) {
+			topics.add(topic);
+			topics.notify();
+		}
+	}
+
+	public void unsubscribe(String topic) {
+		synchronized (topicsRemoved) {
+			topicsRemoved.add(topic);
+			topicsRemoved.notify();
+		}
+	}
+
+	public MqttAdapter(JSAP appProfile, ClientSecurityManager sm, String url, int port, String clientId, String user,
 			String password, String protocol, String caCertFile)
 			throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException {
 		super(appProfile, "MQTT_BROKER_TOPICS", "MQTT_MESSAGE", sm);
@@ -114,14 +155,17 @@ public class MqttAdapter extends Aggregator implements MqttCallbackExtended {
 
 			// CA certificates
 			if (caCertFile == null)
-				options.setSocketFactory(SEPASecurityManager.getSSLContextTrustAllCa(protocol).getSocketFactory());
+				options.setSocketFactory(SSL.getSSLContextTrustAllCa(protocol).getSocketFactory());
 			else
-				options.setSocketFactory(SEPASecurityManager.getSSLContext(protocol, caCertFile).getSocketFactory());
+				options.setSocketFactory(SSL.getSSLContextFromCertFile(protocol, caCertFile).getSocketFactory());
 
 		} else {
 			serverURI = String.format("tcp://%s:%d", url, port);
 		}
-		logger.info("MQTT client to broker: " + serverURI);
+
+		serverUID = serverURI + "@" + user;
+
+		logger.info("Connect MQTT client to broker: " + serverUID);
 
 		// Create client
 		logger.debug("Creating MQTT client...");
@@ -155,18 +199,18 @@ public class MqttAdapter extends Aggregator implements MqttCallbackExtended {
 			public void run() {
 				while (!this.isInterrupted()) {
 					try {
-						logger.debug(serverURI + " connecting...");
+						logger.debug(serverUID + " connecting...");
 						mqttClient.connect(options);
 						break;
 					} catch (MqttSecurityException e) {
-						logger.error(serverURI + " MqttSecurityException: " + e.getMessage());
+						logger.error(serverUID + " MqttSecurityException: " + e.getMessage());
 					} catch (MqttException e) {
-						logger.error(serverURI + " MqttException: " + e.getMessage());
+						logger.error(serverUID + " MqttException: " + e.getMessage());
 					}
 				}
 			}
 		};
-		connThread.setName(serverURI + " conn");
+		connThread.setName(serverURI + "@" + user + " conn");
 		connThread.start();
 
 		subThread = new Thread() {
@@ -174,7 +218,7 @@ public class MqttAdapter extends Aggregator implements MqttCallbackExtended {
 				while (!this.isInterrupted()) {
 					synchronized (topicsRemoved) {
 						try {
-							logger.debug(serverURI + " wait for topics");
+							logger.debug(serverUID + " wait for topics");
 							topicsRemoved.wait();
 						} catch (InterruptedException e) {
 							return;
@@ -184,7 +228,7 @@ public class MqttAdapter extends Aggregator implements MqttCallbackExtended {
 							while (true) {
 
 								try {
-									logger.debug(serverURI + " unsubscribe from: " + topic);
+									logger.debug(serverUID + " unsubscribe from: " + topic);
 									mqttClient.unsubscribe(topic);
 									topics.remove(topic);
 								} catch (MqttException e) {
@@ -193,11 +237,11 @@ public class MqttAdapter extends Aggregator implements MqttCallbackExtended {
 									} catch (InterruptedException e1) {
 										return;
 									}
-									logger.warn(serverURI + " exception on unsubscribe: " + e.getMessage());
+									logger.warn(serverUID + " exception on unsubscribe: " + e.getMessage());
 									continue;
 								}
 
-								logger.debug(serverURI + " unsubscribed from: " + topic);
+								logger.debug(serverUID + " unsubscribed from: " + topic);
 
 								break;
 							}
@@ -208,7 +252,7 @@ public class MqttAdapter extends Aggregator implements MqttCallbackExtended {
 				}
 			}
 		};
-		subThread.setName(serverURI + " sub");
+		subThread.setName(serverUID + " sub");
 		subThread.start();
 
 		unsubThread = new Thread() {
@@ -216,7 +260,7 @@ public class MqttAdapter extends Aggregator implements MqttCallbackExtended {
 				while (true) {
 					synchronized (topics) {
 						try {
-							logger.debug(serverURI + " wait for topics");
+							logger.debug(serverUID + " wait for topics");
 							topics.wait();
 						} catch (InterruptedException e) {
 							return;
@@ -224,9 +268,8 @@ public class MqttAdapter extends Aggregator implements MqttCallbackExtended {
 
 						for (String topic : topics) {
 							while (true) {
-
 								try {
-									logger.debug(serverURI + " subscribe to " + topic);
+									logger.debug(serverUID + " subscribe to " + topic);
 									mqttClient.subscribe(topic);
 								} catch (MqttException e) {
 									try {
@@ -234,11 +277,11 @@ public class MqttAdapter extends Aggregator implements MqttCallbackExtended {
 									} catch (InterruptedException e1) {
 										return;
 									}
-									logger.warn(serverURI + " exception on subscribe: " + e.getMessage());
+									logger.warn(serverUID + " exception on subscribe: " + e.getMessage());
 									continue;
 								}
 
-								logger.debug(serverURI + " subscribed to: " + topic);
+								logger.info(serverUID + " subscribed to: " + topic);
 
 								break;
 							}
@@ -248,22 +291,25 @@ public class MqttAdapter extends Aggregator implements MqttCallbackExtended {
 				}
 			}
 		};
-		unsubThread.setName(serverURI + " unsub");
+		unsubThread.setName(serverUID + " unsub");
 		unsubThread.start();
 
 		try {
 			setSubscribeBindingValue("url", new RDFTermLiteral(url));
 			setSubscribeBindingValue("port", new RDFTermLiteral(String.format("%d", port), "xsd:integer"));
+			if (user != null)
+				setSubscribeBindingValue("user", new RDFTermLiteral(user));
+			else
+				setSubscribeBindingValue("user", new RDFTermLiteral(""));
 		} catch (SEPABindingsException e1) {
-			logger.error(serverURI + " failed to set bindings: " + e1.getMessage());
+			logger.error(serverUID + " failed to set bindings: " + e1.getMessage());
 		}
 
 		try {
-			logger.debug(serverURI + " subscribe to SEPA...");
+			logger.debug(serverUID + " subscribe to SEPA...");
 			subscribe(5000);
-		} catch (SEPASecurityException | SEPAPropertiesException | SEPAProtocolException
-				| SEPABindingsException e) {
-			logger.error(serverURI + " failed to subscribe: " + e.getMessage());
+		} catch (SEPASecurityException | SEPAPropertiesException | SEPAProtocolException | SEPABindingsException e) {
+			logger.error(serverUID + " failed to subscribe: " + e.getMessage());
 		}
 	}
 
@@ -284,9 +330,9 @@ public class MqttAdapter extends Aggregator implements MqttCallbackExtended {
 							setUpdateBindingValue("value", new RDFTermLiteral(value));
 							setUpdateBindingValue("broker", new RDFTermLiteral("simulator"));
 
-							OffsetDateTime utc = OffsetDateTime.now(ZoneOffset.UTC);			
-							setUpdateBindingValue("timestamp", new RDFTermLiteral(utc.toString()));
-							
+//							OffsetDateTime utc = OffsetDateTime.now(ZoneOffset.UTC);			
+//							setUpdateBindingValue("timestamp", new RDFTermLiteral(utc.toString()));
+
 							update();
 						} catch (SEPASecurityException | SEPAProtocolException | SEPAPropertiesException
 								| SEPABindingsException e) {
@@ -306,42 +352,57 @@ public class MqttAdapter extends Aggregator implements MqttCallbackExtended {
 
 	@Override
 	public void connectComplete(boolean reconnect, String serverURI) {
-		logger.debug(serverURI + " @connectComplete reconnect: " + reconnect);
+		logger.info(serverUID + " @connectComplete reconnect: " + reconnect);
 
 		synchronized (topics) {
-			logger.debug(serverURI + " notify!");
+			logger.debug(serverUID + " notify!");
 			topics.notify();
 		}
 	}
 
 	@Override
 	public void connectionLost(Throwable cause) {
-		logger.warn(serverURI + " connection lost: " + cause.getMessage());
+		logger.warn(serverUID + " connection lost: " + cause.getMessage());
 	}
 
 	@Override
 	public void messageArrived(String topic, MqttMessage message) {
-		byte[] payload = message.getPayload();
+		logger.debug("Topic: " + topic + " Message: " + message);
+
 		String converted = "";
-		for (int i = 0; i < payload.length; i++) {
-			if (payload[i] == 0)
-				break;
-			converted += String.format("%c", payload[i]);
+		try {
+			byte[] payload = message.getPayload();
+
+			for (int i = 0; i < payload.length; i++) {
+				if (payload[i] == 0)
+					break;
+				converted += String.format("%c", payload[i]);
+			}
+
+			logger.info(serverUID + " message received: " + topic + " " + converted);
+		} catch (IllegalFormatException e) {
+			logger.warn(e.getMessage());
+			return;
 		}
 
-		logger.info(serverURI + " message received: " + topic + " " + converted);
-
 		try {
-			OffsetDateTime utc = OffsetDateTime.now(ZoneOffset.UTC);
-			
+//			OffsetDateTime utc = OffsetDateTime.now(ZoneOffset.UTC);
+
 			setUpdateBindingValue("topic", new RDFTermLiteral(topic));
 			setUpdateBindingValue("value", new RDFTermLiteral(converted));
-			setUpdateBindingValue("broker", new RDFTermLiteral(serverURI));			
-			setUpdateBindingValue("timestamp", new RDFTermLiteral(utc.toString(),"xsd:dateTime"));
-			
-			update();
+			setUpdateBindingValue("broker", new RDFTermLiteral(serverURI));
+//			setUpdateBindingValue("timestamp", new RDFTermLiteral(utc.toString(),"xsd:dateTime"));
+
+			Response ret = update();
+
+			if (ret.isError()) {
+				logger.error("Failed to update MQTT message: " + ret);
+			} else {
+				logger.debug("Update response: " + ret);
+			}
+
 		} catch (SEPASecurityException | SEPAProtocolException | SEPAPropertiesException | SEPABindingsException e) {
-			logger.error(serverURI + " exception:" + e.getMessage());
+			logger.error(serverUID + " exception:" + e.getMessage());
 		}
 	}
 
@@ -367,19 +428,14 @@ public class MqttAdapter extends Aggregator implements MqttCallbackExtended {
 		try {
 			mqttClient.disconnect();
 		} catch (MqttException e) {
-			logger.warn(serverURI + " failed to disconnect " + e.getMessage());
+			logger.warn(serverUID + " failed to disconnect " + e.getMessage());
 		}
 
 		try {
 			mqttClient.close();
 		} catch (MqttException e) {
-			logger.warn(serverURI + " failed to close " + e.getMessage());
+			logger.warn(serverUID + " failed to close " + e.getMessage());
 		}
-	}
-
-	@Override
-	public void onResults(ARBindingsResults results) {
-
 	}
 
 	@Override
@@ -388,11 +444,13 @@ public class MqttAdapter extends Aggregator implements MqttCallbackExtended {
 			for (Bindings bindings : results.getBindings()) {
 				String topicString = bindings.getValue("topic");
 
-				if (!topics.contains(topicString))
+				if (!topics.contains(topicString)) {
+					logger.debug("Added topic: " + topicString);
 					topics.add(topicString);
+				}
 			}
 
-			logger.debug(serverURI + " notify!");
+			logger.debug(serverUID + " notify!");
 			topics.notify();
 		}
 	}
@@ -403,37 +461,19 @@ public class MqttAdapter extends Aggregator implements MqttCallbackExtended {
 			for (Bindings bindings : results.getBindings()) {
 				String topicString = bindings.getValue("topic");
 
-				if (!topicsRemoved.contains(topicString))
+				if (!topicsRemoved.contains(topicString)) {
+					logger.debug("Removed topic: " + topicString);
 					topicsRemoved.add(topicString);
+				}
 			}
 
-			logger.debug(serverURI + " notify!");
+			logger.debug(serverUID + " notify!");
 			topicsRemoved.notify();
 		}
 	}
 
 	@Override
-	public void onBrokenConnection() {
-		logger.warn(serverURI + " onBrokenConnection");
-	}
-
-	@Override
-	public void onError(ErrorResponse errorResponse) {
-		logger.error(serverURI + " onError " + errorResponse);
-	}
-
-	@Override
-	public void onSubscribe(String spuid, String alias) {
-		logger.debug(serverURI + " onSubscribe SPUID: " + spuid + " alias: " + alias);
-	}
-
-	@Override
-	public void onUnsubscribe(String spuid) {
-		logger.debug(serverURI + " onUnsubscribe SPUID: " + spuid);
-	}
-
-	@Override
 	public void onFirstResults(BindingsResults results) {
-		onAddedResults(results);	
+		onAddedResults(results);
 	}
 }
