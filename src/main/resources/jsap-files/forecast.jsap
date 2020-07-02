@@ -1,0 +1,97 @@
+{
+	"queries": {
+		"FORECAST_N_DAYS": {
+			"sparql": "SELECT * WHERE {graph <http://wot.arces.unibo.it/forecast> {?obs sosa:hasFeatureOfInterest ?place ; rdf:type swamp:Forecast ; sosa:resultTime ?resultTime ; sosa:phenomenonTime ?timestamp ; sosa:observedProperty ?property ; sosa:hasResult ?res . ?res qudt:numericValue ?value ; qudt:unit ?unit BIND((xsd:dateTime(substr(xsd:string(?timestamp),1,10)) - xsd:dateTime(substr(xsd:string(?resultTime),1,10)))/86400 AS ?diff) FILTER (xsd:dateTime(?resultTime) >= xsd:dateTime(concat(?from,'T00:00:00Z')) && xsd:dateTime(?resultTime) <= xsd:dateTime(concat(?to,'T23:59:59Z')) && (?diff = xsd:integer(?n)) )}}",
+			"forcedBindings": {
+				"from": {
+					"type": "literal",
+					"value": "2019-07-30"
+				},
+				"to": {
+					"type": "literal",
+					"value": "2019-08-03"
+				},
+				"n": {
+					"type": "literal",
+					"value": "0"
+				},
+				"place": {
+					"type": "uri",
+					"value": "swamp:Bertacchini"
+				},
+				"property": {
+					"type": "uri",
+					"value": "swamp:LeafAreaIndex"
+				}
+			}
+		},
+		"FORECAST_IRRIGATION": {
+			"sparql": "SELECT * WHERE {graph <http://wot.arces.unibo.it/forecast> {?obs sosa:hasFeatureOfInterest ?place ; rdf:type swamp:Forecast; sosa:resultTime ?resultTime ; sosa:phenomenonTime ?prediction ; sosa:observedProperty swamp:IrrigationNeeds ; sosa:hasResult ?res . ?res qudt:numericValue ?value ; qudt:unit ?unit} . OPTIONAL {?unit qudt:symbol ?symbol} FILTER (xsd:dateTime(?resultTime) = xsd:dateTime(concat(?from,'T00:00:00Z')) && xsd:dateTime(?prediction) = xsd:dateTime(concat(?to,'T00:00:00Z')))}",
+			"forcedBindings": {
+				"from": {
+					"type": "literal",
+					"value": "2019-09-01"
+				},
+				"to": {
+					"type": "literal",
+					"value": "2019-09-01"
+				},
+				"place": {
+					"type": "uri",
+					"value": "swamp:Bertacchini"
+				}
+			}
+		},
+		"FORECAST_LAI": {
+			"sparql": "SELECT * WHERE {graph <http://wot.arces.unibo.it/forecast> {?obs sosa:hasFeatureOfInterest ?place ; rdf:type swamp:Forecast; sosa:resultTime ?resultTime ; sosa:phenomenonTime ?prediction ; sosa:observedProperty swamp:LeafAreaIndex ; sosa:hasResult ?res . ?res qudt:numericValue ?value ; qudt:unit ?unit} . OPTIONAL{?unit qudt:symbol ?symbol} FILTER (xsd:dateTime(?resultTime) = xsd:dateTime(concat(?from,'T00:00:00Z')) && xsd:dateTime(?prediction) = xsd:dateTime(concat(?to,'T00:00:00Z')))}",
+			"forcedBindings": {
+				"from": {
+					"type": "literal",
+					"value": "2019-09-01"
+				},
+				"to": {
+					"type": "literal",
+					"value": "2019-09-01"
+				},
+				"place": {
+					"type": "uri",
+					"value": "swamp:Bertacchini"
+				}
+			}
+		},
+		"FORECAST_WEATHER_TEMPERATURE": {
+			"sparql": "SELECT ?symbol (MAX(?value) AS ?max) (MIN(?value) AS ?min) (AVG(?value) AS ?avg) WHERE {graph <http://wot.arces.unibo.it/forecast> {?obs sosa:hasFeatureOfInterest ?place ; rdf:type swamp:Forecast ; sosa:resultTime ?resultTime ; sosa:phenomenonTime ?prediction ; sosa:observedProperty arces-monitor:AirTemperature ; sosa:hasResult ?res . ?res qudt:numericValue ?value ; qudt:unit ?unit } . OPTIONAL {?unit qudt:symbol ?symbol} FILTER (xsd:dateTime(?resultTime) > xsd:dateTime(concat(?from,'T00:00:00Z')) && xsd:dateTime(?resultTime) < xsd:dateTime(concat(?from,'T23:59:59Z')) && xsd:dateTime(?prediction) > xsd:dateTime(concat(?to,'T00:00:00Z')) && xsd:dateTime(?prediction) < xsd:dateTime(concat(?to,'T23:59:59Z')))} GROUP BY ?symbol",
+			"forcedBindings": {
+				"from": {
+					"type": "literal",
+					"value": "2019-09-01"
+				},
+				"to": {
+					"type": "literal",
+					"value": "2019-09-01"
+				},
+				"place": {
+					"type": "uri",
+					"value": "swamp:Bertacchini"
+				}
+			}
+		},
+		"FORECAST_WEATHER_PRECIPITATION": {
+			"sparql": "SELECT ?symbol (SUM(?value) AS ?sum) WHERE {graph <http://wot.arces.unibo.it/forecast> {?obs sosa:hasFeatureOfInterest ?place ; rdf:type swamp:Forecast ; sosa:resultTime ?resultTime ; sosa:phenomenonTime ?prediction ; sosa:observedProperty arces-monitor:Precipitation ; sosa:hasResult ?res . ?res qudt:numericValue ?value ; qudt:unit ?unit } . OPTIONAL {?unit qudt:symbol ?symbol}  FILTER (xsd:dateTime(?resultTime) > xsd:dateTime(concat(?from,'T00:00:00Z')) && xsd:dateTime(?resultTime) < xsd:dateTime(concat(?from,'T23:59:59Z')) && xsd:dateTime(?prediction) > xsd:dateTime(concat(?to,'T00:00:00Z')) && xsd:dateTime(?prediction) < xsd:dateTime(concat(?to,'T23:59:59Z')))} GROUP BY ?symbol",
+			"forcedBindings": {
+				"from": {
+					"type": "literal",
+					"value": "2019-09-01"
+				},
+				"to": {
+					"type": "literal",
+					"value": "2019-09-01"
+				},
+				"place": {
+					"type": "uri",
+					"value": "swamp:Bertacchini"
+				}
+			}
+		}
+	}
+}
