@@ -24,7 +24,7 @@ public class ObservationLogger extends Aggregator {
 	public static void main(String[] args) throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException, InterruptedException, IOException {
 		ObservationLogger logger = new ObservationLogger();
 		
-		logger.subscribe(5000);
+		logger.subscribe();
 		
 		synchronized(logger) {
 			logger.wait();

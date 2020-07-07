@@ -83,7 +83,7 @@ public abstract class MqttMapper implements ISubscriptionHandler {
 		new Thread() {
 			public void run() {
 				try {
-					client.subscribe("MQTT_MESSAGES", null, null, 5000, "message");
+					client.subscribe("MQTT_MESSAGES", null, null, "message");
 				} catch (SEPAProtocolException | SEPASecurityException | SEPAPropertiesException | SEPABindingsException
 						| InterruptedException e) {
 					logger.error(e.getMessage());
@@ -95,7 +95,7 @@ public abstract class MqttMapper implements ISubscriptionHandler {
 		new Thread() {
 			public void run() {
 				try {
-					client.subscribe("MQTT_MAPPINGS", null, null, 5000, "mappings");
+					client.subscribe("MQTT_MAPPINGS", null, null, "mappings");
 				} catch (SEPAProtocolException | SEPASecurityException | SEPAPropertiesException | SEPABindingsException
 						| InterruptedException e) {
 					logger.error(e.getMessage());
@@ -110,9 +110,9 @@ public abstract class MqttMapper implements ISubscriptionHandler {
 					if (!mapperUri.equals("mqtt:DefaultMapper")) {
 						Bindings fb = new Bindings();
 						fb.addBinding("mapper", new RDFTermURI(mapperUri));
-						client.subscribe("MQTT_MAPPER", null, fb, 5000, "topics");
+						client.subscribe("MQTT_MAPPER", null, fb, "topics");
 					} else {
-						client.subscribe("MQTT_MAPPERS_TOPICS", null, null, 5000, "topics");
+						client.subscribe("MQTT_MAPPERS_TOPICS", null, null, "topics");
 					}
 				} catch (SEPAProtocolException | SEPASecurityException | SEPAPropertiesException | SEPABindingsException
 						| InterruptedException e) {
@@ -183,7 +183,7 @@ public abstract class MqttMapper implements ISubscriptionHandler {
 							appProfile.getUpdateBindings("UPDATE_OBSERVATION_VALUE").getDatatype("value")));
 
 					try {
-						client.update("UPDATE_OBSERVATION_VALUE", fb, 5000);
+						client.update("UPDATE_OBSERVATION_VALUE", fb);
 					} catch (SEPASecurityException | IOException | SEPAPropertiesException | SEPABindingsException
 							| SEPAProtocolException e) {
 						logger.error(mapperUri + " " + e.getMessage());

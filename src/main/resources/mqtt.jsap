@@ -1,5 +1,5 @@
 {
-	"#include" : ["file:///mml-host.jsap"],
+	"#include" : ["file:///host.jsap"],
 	"namespaces": {
 		"schema": "http://schema.org/",
 		"rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",

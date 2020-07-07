@@ -74,7 +74,7 @@ public class GuaspariMapper extends MqttMapper {
 
 		logger.debug(mapperUri+" Mapping: "+topic+" "+value);
 		
-		JsonObject json = new JsonParser().parse(value).getAsJsonObject();
+		JsonObject json = JsonParser.parseString(value).getAsJsonObject();
 
 		// Topic
 		String newTopic = topic + "/" + json.get("deviceName").getAsString();

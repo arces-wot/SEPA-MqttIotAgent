@@ -307,7 +307,7 @@ public class MqttAdapter extends Aggregator implements MqttCallbackExtended {
 
 		try {
 			logger.debug(serverUID + " subscribe to SEPA...");
-			subscribe(5000);
+			subscribe();
 		} catch (SEPASecurityException | SEPAPropertiesException | SEPAProtocolException | SEPABindingsException e) {
 			logger.error(serverUID + " failed to subscribe: " + e.getMessage());
 		}

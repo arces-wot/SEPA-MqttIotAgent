@@ -52,7 +52,7 @@ public class WizzilabMapper extends MqttMapper {
 	protected ArrayList<String[]> map(String topic, String value) {
 		ArrayList<String[]> ret = new ArrayList<String[]>();
 
-		JsonObject json = new JsonParser().parse(value).getAsJsonObject();
+		JsonObject json = JsonParser.parseString(value).getAsJsonObject();
 
 		if (json.has("msg")) {
 			JsonObject obj = json.getAsJsonObject("msg");

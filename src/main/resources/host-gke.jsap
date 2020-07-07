@@ -1,5 +1,5 @@
 {
-	"host": "localhost",
+	"host": "engine",
 	"oauth": {
 		"enable": false,
 		"register": "https://localhost:8443/oauth/register",
@@ -20,6 +20,7 @@
 		}
 	},
 	"sparql11seprotocol": {
+		"reconnect" : true,
 		"protocol": "ws",
 		"availableProtocols": {
 			"ws": {

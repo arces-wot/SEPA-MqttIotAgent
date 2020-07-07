@@ -4,13 +4,9 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>it.unibo.arces.wot</groupId>
-	<!-- <artifactId>sepa.apps.mqtt.MqttIotAgent</artifactId> -->
 	<artifactId>apps.mqtt.MqttIotAgent</artifactId>
-	<version>0.9.10</version>
+	<version>0-SNAPSHOT</version>
 	<packaging>jar</packaging>
-
-	<!-- <name>sepa.apps.mqtt.MqttIotAgent</name> -->
-<!-- 	<name>SEPAMqqtIoTAgent</name> -->
 
 	<url>http://maven.apache.org</url>
 
@@ -26,7 +22,7 @@
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>build-a</id>
+						<id>build-MqttAgent</id>
 						<configuration>
 							<archive>
 								<manifest>
@@ -36,8 +32,7 @@
 							<descriptorRefs>
 								<descriptorRef>jar-with-dependencies</descriptorRef>
 							</descriptorRefs>
-							<!-- <appendAssemblyId>false</appendAssemblyId> -->
-							<finalName>MQTTIotAgent</finalName>
+							<finalName>MqttIotAgent-${project.version}</finalName>
 						</configuration>
 						<phase>package</phase>
 						<goals>
@@ -45,7 +40,7 @@
 						</goals>
 					</execution>
 					<execution>
-						<id>build-b</id>
+						<id>build-ObservationLogger</id>
 						<configuration>
 							<archive>
 								<manifest>
@@ -55,8 +50,7 @@
 							<descriptorRefs>
 								<descriptorRef>jar-with-dependencies</descriptorRef>
 							</descriptorRefs>
-							<!-- <appendAssemblyId>false</appendAssemblyId> -->
-							<finalName>ObservationLogger</finalName>
+							<finalName>ObservationLogger-${project.version}</finalName>
 						</configuration>
 						<phase>package</phase>
 						<goals>
@@ -64,7 +58,43 @@
 						</goals>
 					</execution>
 					<execution>
-						<id>build-c</id>
+						<id>build-mqtt-DefaultMapper</id>
+						<configuration>
+							<archive>
+								<manifest>
+									<mainClass>it.unibo.arces.wot.sepa.apps.mqtt.mappers.DefaultMapper</mainClass>
+								</manifest>
+							</archive>
+							<descriptorRefs>
+								<descriptorRef>jar-with-dependencies</descriptorRef>
+							</descriptorRefs>
+							<finalName>DefaultMapper-${project.version}</finalName>
+						</configuration>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>build-mqtt-GuaspariMapper</id>
+						<configuration>
+							<archive>
+								<manifest>
+									<mainClass>it.unibo.arces.wot.sepa.apps.mqtt.mappers.GuaspariMapper</mainClass>
+								</manifest>
+							</archive>
+							<descriptorRefs>
+								<descriptorRef>jar-with-dependencies</descriptorRef>
+							</descriptorRefs>
+							<finalName>GuaspariMapper-${project.version}</finalName>
+						</configuration>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>build-mqtt-LepidaMapper</id>
 						<configuration>
 							<archive>
 								<manifest>
@@ -74,8 +104,61 @@
 							<descriptorRefs>
 								<descriptorRef>jar-with-dependencies</descriptorRef>
 							</descriptorRefs>
-							<!-- <appendAssemblyId>false</appendAssemblyId> -->
-							<finalName>LepidaMapper</finalName>
+							<finalName>LepidaMapper-${project.version}</finalName>
+						</configuration>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>build-mqtt-MeterMapper</id>
+						<configuration>
+							<archive>
+								<manifest>
+									<mainClass>it.unibo.arces.wot.sepa.apps.mqtt.mappers.MeterMapper</mainClass>
+								</manifest>
+							</archive>
+							<descriptorRefs>
+								<descriptorRef>jar-with-dependencies</descriptorRef>
+							</descriptorRefs>
+							<finalName>MeterMapper-${project.version}</finalName>
+						</configuration>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>build-mqtt-SwampMapper</id>
+						<configuration>
+							<archive>
+								<manifest>
+									<mainClass>it.unibo.arces.wot.sepa.apps.mqtt.mappers.SwampMapper</mainClass>
+								</manifest>
+							</archive>
+							<descriptorRefs>
+								<descriptorRef>jar-with-dependencies</descriptorRef>
+							</descriptorRefs>
+							<finalName>SwampMapper-${project.version}</finalName>
+						</configuration>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>build-mqtt-WizzilabMapper</id>
+						<configuration>
+							<archive>
+								<manifest>
+									<mainClass>it.unibo.arces.wot.sepa.apps.mqtt.mappers.WizzilabMapper</mainClass>
+								</manifest>
+							</archive>
+							<descriptorRefs>
+								<descriptorRef>jar-with-dependencies</descriptorRef>
+							</descriptorRefs>
+							<finalName>WizzilabMapper-${project.version}</finalName>
 						</configuration>
 						<phase>package</phase>
 						<goals>
@@ -84,99 +167,64 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- <plugin> -->
-			<!-- <groupId>org.apache.maven.plugins</groupId> -->
-			<!-- <artifactId>maven-shade-plugin</artifactId> -->
-			<!-- <version>2.3</version> -->
-			<!-- <executions> -->
-			<!-- Run shade goal on package phase -->
-			<!-- <execution> -->
-			<!-- <phase>package</phase> -->
-			<!-- <goals> -->
-			<!-- <goal>shade</goal> -->
-			<!-- </goals> -->
-			<!-- <configuration> -->
-			<!-- <transformers> -->
-			<!-- add Main-Class to manifest file -->
-			<!-- <transformer -->
-			<!-- implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"> -->
-			<!-- <mainClass>it.unibo.arces.wot.sepa.apps.mqtt.MqttIotAgent</mainClass> -->
-			<!-- <mainClass>it.unibo.arces.wot.sepa.apps.mqtt.mappers.GuaspariMapper</mainClass> -->
-			<!-- </transformer> -->
-			<!-- </transformers> -->
-			<!-- <filters> -->
-			<!-- <filter> -->
-			<!-- <artifact>*:*</artifact> -->
-			<!-- <excludes> -->
-			<!-- <exclude>META-INF/*.SF</exclude> -->
-			<!-- <exclude>META-INF/*.DSA</exclude> -->
-			<!-- <exclude>META-INF/*.RSA</exclude> -->
-			<!-- </excludes> -->
-			<!-- </filter> -->
-			<!-- </filters> -->
-			<!-- </configuration> -->
-			<!-- </execution> -->
-			<!-- </executions> -->
-			<!-- </plugin> -->
+			
 			<plugin>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<configuration>
-					<tasks>
-						<copy todir="${basedir}/target">
-							<fileset dir="${basedir}/src/main/resources">
-								<exclude name="**/backup/*" />
-							</fileset>
-						</copy>
-						<!-- <copy file="src/main/resources/mqtt.jsap" -->
-						<!-- tofile="target/mqtt.jsap" /> -->
-					</tasks>
-				</configuration>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.0.1</version>
 				<executions>
 					<execution>
+						<id>copy-resources</id>
+						<!-- here the phase you need -->
 						<phase>install</phase>
 						<goals>
-							<goal>run</goal>
+							<goal>copy-resources</goal>
 						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/target</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${basedir}/src/main/resources</directory>
+								</resource>
+							</resources>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
 		</plugins>
 	</build>
 	<dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.11</version>
-			<scope>test</scope>
-		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.eclipse.paho/org.eclipse.paho.client.mqttv3 -->
 		<dependency>
 			<groupId>org.eclipse.paho</groupId>
 			<artifactId>org.eclipse.paho.client.mqttv3</artifactId>
-			<version>1.2.0</version>
+			<version>1.2.4</version>
 		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api -->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-api</artifactId>
-			<version>2.8.1</version>
+			<version>2.13.3</version>
 		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
-			<version>2.8.1</version>
+			<version>2.13.3</version>
 		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
-			<version>2.8.0</version>
+			<version>2.8.6</version>
 		</dependency>
+
 		<dependency>
 			<groupId>it.unibo.arces.wot</groupId>
 			<artifactId>client-api</artifactId>
-			<version>0.9.10</version>
+			<version>0-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 </project>

@@ -53,7 +53,7 @@ public class MeterMapper extends MqttMapper {
 		
 		JsonObject json  = null;
 		try{
-			json = new JsonParser().parse(value).getAsJsonObject();
+			json = JsonParser.parseString(value).getAsJsonObject();
 		}
 		catch(JsonParseException e) {
 			logger.error(mapperUri+" "+e.getMessage());

@@ -25,7 +25,7 @@ public class MqttAdapterPool extends Consumer {
 			throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, IOException, SEPABindingsException {
 		super(appProfile, "MQTT_BROKERS", sm);
 		
-		subscribe(5000);
+		subscribe();
 	}
 	
 	public void close() throws IOException {
