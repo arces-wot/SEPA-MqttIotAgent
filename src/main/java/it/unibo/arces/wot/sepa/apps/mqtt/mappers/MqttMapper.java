@@ -216,8 +216,8 @@ public abstract class MqttMapper implements ISubscriptionHandler {
 	}
 
 	@Override
-	public void onBrokenConnection() {
-		logger.error(mapperUri + " *** onBrokenConnection ***");
+	public void onBrokenConnection(ErrorResponse err) {
+		logger.error(mapperUri + " *** onBrokenConnection *** "+err);
 
 		while (!subscribed) {
 			logger.info(mapperUri + " subscribe...");
