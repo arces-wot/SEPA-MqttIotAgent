@@ -1,0 +1,125 @@
+{
+	"host": "34.65.95.142",
+	"oauth": {
+		"enable": false,
+		"register": "https://localhost:8443/oauth/register",
+		"tokenRequest": "https://localhost:8443/oauth/token"
+	},
+	"sparql11protocol": {
+		"protocol": "http",
+		"port": 30009,
+		"query": {
+			"path": "/query",
+			"method": "POST",
+			"format": "JSON"
+		},
+		"update": {
+			"path": "/update",
+			"method": "POST",
+			"format": "JSON"
+		}
+	},
+	"sparql11seprotocol": {
+		"protocol": "ws",
+		"availableProtocols": {
+			"ws": {
+				"port": 30020,
+				"path": "/subscribe"
+			},
+			"wss": {
+				"port": 9443,
+				"path": "/secure/subscribe"
+			}
+		}
+	},
+	"graphs": {
+		
+	},
+	"namespaces": {
+		"schema": "http://schema.org/",
+		"rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+		"rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+		"sosa": "http://www.w3.org/ns/sosa/",
+		"qudt": "http://qudt.org/schema/qudt#",
+		"unit": "http://qudt.org/vocab/unit#",
+		"arces-monitor": "http://wot.arces.unibo.it/monitor#",
+		"swamp": "http://swamp-project.org/ns#",
+		"mqtt": "http://wot.arces.unibo.it/mqtt#",
+		"time": "http://www.w3.org/2006/time#",
+		"wgs84_pos": "http://www.w3.org/2003/01/geo/wgs84_pos#",
+		"gn": "http://www.geonames.org/ontology#"
+	},
+	"extended": {
+		
+	},
+	"updates": {
+		
+	},
+	"queries": {
+		"MQTT_MAPPINGS": {
+			"sparql": "SELECT * {GRAPH <http://wot.arces.unibo.it/mqtt> {?mapping rdf:type mqtt:Mapping ; mqtt:observation ?observation ; mqtt:topic ?topic}}"
+		},
+		"MQTT_MAPPER": {
+			"sparql": "SELECT ?topic ?regex {GRAPH <http://wot.arces.unibo.it/mqtt> {?mapper rdf:type mqtt:Mapper ; mqtt:topic ?topic . OPTIONAL {?mapper mqtt:regex ?regex}}}",
+			"forcedBindings": {
+				"mapper": {
+					"type": "uri",
+					"value": "mqtt:GuaspariMapper"
+				}
+			}
+		},
+		"MQTT_MAPPERS_TOPICS": {
+			"sparql": "SELECT DISTINCT ?topic {GRAPH <http://wot.arces.unibo.it/mqtt> {?mapper rdf:type mqtt:Mapper ; mqtt:topic ?topic}}"
+		},
+		"MQTT_BROKERS": {
+			"sparql": "SELECT * WHERE { GRAPH <http://wot.arces.unibo.it/mqtt> {?broker mqtt:url ?url ; rdf:type mqtt:Broker ; mqtt:port ?port ; mqtt:sslProtocol ?sslProtocol ; mqtt:user ?user ; mqtt:password ?password ; mqtt:sslCA ?caFile ; mqtt:clientId ?clientId}}"
+		},
+		"MQTT_BROKER_TOPICS": {
+			"sparql": "SELECT ?topic WHERE { GRAPH <http://wot.arces.unibo.it/mqtt> {?broker mqtt:url ?url ; rdf:type mqtt:Broker ; mqtt:port ?port ; mqtt:topic ?topic}}",
+			"forcedBindings": {
+				"url": {
+					"type": "literal",
+					"value": "giove.arces.unibo.it"
+				},
+				"port": {
+					"type": "literal",
+					"value": 52877,
+					"datatype": "xsd:integer"
+				}
+			}
+		},
+		"OBSERVATIONS": {
+			"sparql": "SELECT * WHERE {?unit qudt:symbol ?symbol . GRAPH <http://wot.arces.unibo.it/observation> {?observation rdf:type sosa:Observation ; rdfs:label ?label ; sosa:hasResult ?quantity ; sosa:hasFeatureOfInterest ?location . ?quantity rdf:type qudt:QuantityValue ; qudt:unit ?unit . OPTIONAL {?quantity qudt:numericValue ?value} . OPTIONAL {?observation sosa:resultTime ?timestamp}} . GRAPH <http://wot.arces.unibo.it/context> {?location schema:name ?name} }"
+		},
+		"MQTT_TOPICS_COUNT": {
+			"sparql": "SELECT (COUNT(DISTINCT ?topic) AS ?topics) WHERE {GRAPH <http://wot.arces.unibo.it/mqtt/message> {?message rdf:type mqtt:Message ; mqtt:topic ?topic}}"
+		},
+		"MQTT_TOPICS": {
+			"sparql": "SELECT DISTINCT * WHERE {GRAPH <http://wot.arces.unibo.it/mqtt/message> {?message rdf:type mqtt:Message ; mqtt:topic ?topic ; mqtt:hasBroker ?broker}}"
+		},
+		"MQTT_TOPIC_VALUE": {
+			"sparql": "SELECT * WHERE {GRAPH <http://wot.arces.unibo.it/mqtt/message> {?message rdf:type mqtt:Message ; mqtt:topic ?topic; mqtt:value ?value}}",
+			"forcedBindings": {
+				"topic": {
+					"type": "literal",
+					"value": "mqttTopicXYZ"
+				}
+			}
+		},
+		"MQTT_MESSAGES": {
+			"sparql": "SELECT * WHERE {GRAPH <http://wot.arces.unibo.it/mqtt/message> {?message rdf:type mqtt:Message ; mqtt:value ?value ; mqtt:topic ?topic ; mqtt:hasBroker ?broker;  time:inXSDDateTimeStamp ?timestamp}}"
+		},
+		"HISTORICAL_TRIPLES": {
+			"sparql": "SELECT (COUNT(?log) AS ?count) WHERE {GRAPH <http://wot.arces.unibo.it/observation/history> {?log ?x ?y}}"
+		},
+		"LIVE_TRIPLES": {
+			"sparql": "SELECT (COUNT(?log) AS ?count) WHERE {GRAPH <http://wot.arces.unibo.it/observation> {?log ?x ?y}}"
+		},
+		"PLACES_COUNT": {
+			"sparql": "SELECT (COUNT(?place) AS ?count) WHERE {GRAPH <http://wot.arces.unibo.it/context> {?place rdf:type schema:Place}}"
+		},
+		"OBSERVATIONS_COUNT": {
+			"sparql": "SELECT (COUNT(?observation) AS ?count) WHERE {GRAPH <http://wot.arces.unibo.it/observation> {?observation rdf:type sosa:Observation}}"
+		}
+	}
+}
