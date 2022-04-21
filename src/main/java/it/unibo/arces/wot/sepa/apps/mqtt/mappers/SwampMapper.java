@@ -13,7 +13,6 @@ import it.unibo.arces.wot.sepa.commons.exceptions.SEPABindingsException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPAPropertiesException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPAProtocolException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPASecurityException;
-import it.unibo.arces.wot.sepa.commons.security.ClientSecurityManager;
 
 /**
 
@@ -34,7 +33,7 @@ import it.unibo.arces.wot.sepa.commons.security.ClientSecurityManager;
  * */
 public class SwampMapper extends MqttMapper {
 
-	private String entryMember = "object";
+	private String entryMember = "objectJSON";
 	
 	public static void main(String[] args) throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException, InterruptedException, IOException{			
 		SwampMapper mapper = new SwampMapper();
@@ -44,11 +43,6 @@ public class SwampMapper extends MqttMapper {
 		synchronized(mapper) {
 			mapper.wait();
 		}
-	}
-	
-	public SwampMapper(ClientSecurityManager sm)
-			throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException, InterruptedException {
-		super(sm, "mqtt:SwampMapper");
 	}
 	
 	public SwampMapper()
@@ -66,6 +60,7 @@ public class SwampMapper extends MqttMapper {
 		}
 		catch(JsonParseException e) {
 			logger.error(mapperUri+" "+e.getMessage());
+			return mapping;
 		}
 		
 		if (!json.has(entryMember)) {
@@ -73,7 +68,15 @@ public class SwampMapper extends MqttMapper {
 			return mapping;
 		}
 		
-		json = json.getAsJsonObject(entryMember);
+		//json = json.getAsJsonObject(entryMember);
+		// Member is a string not a JSON object
+		try{
+			json = JsonParser.parseString(json.get(entryMember).getAsString()).getAsJsonObject();
+		}
+		catch(JsonParseException e) {
+			logger.error(mapperUri+" "+e.getMessage());
+			return mapping;
+		}
 		
 		for (Entry<String, JsonElement> elem : json.entrySet()) {
 		
@@ -94,6 +97,7 @@ public class SwampMapper extends MqttMapper {
 					}
 					
 					mapping.add(new String[] {observation,sens.getValue().getAsString()});
+					logger.info(mapperUri+" Topic: "+topic+" Value: "+value+" ==> Observation: "+observation+ " Value: "+sens.getValue().getAsString());
 				}
 			}
 			/*
@@ -112,8 +116,11 @@ public class SwampMapper extends MqttMapper {
 				}
 				
 				mapping.add(new String[] {observation,elem.getValue().getAsString()});
+				logger.info(mapperUri+" Topic: "+topic+" Value: "+value+" ==> Observation: "+observation+ " Value: "+elem.getValue().getAsString());
 			}
 		}
+		
+		logger.info(mapperUri+" Observations: "+mapperUri);
 		
 		return mapping;
 	}

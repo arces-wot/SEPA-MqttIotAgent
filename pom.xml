@@ -12,8 +12,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.source>13</maven.compiler.source>
+		<maven.compiler.target>13</maven.compiler.target>
 	</properties>
 
 	<build>
@@ -28,10 +28,14 @@
 								<manifest>
 									<mainClass>it.unibo.arces.wot.sepa.apps.mqtt.MqttIotAgent</mainClass>
 								</manifest>
+								<manifestEntries>
+										<Multi-Release>true</Multi-Release>
+									</manifestEntries>
 							</archive>
 							<descriptorRefs>
 								<descriptorRef>jar-with-dependencies</descriptorRef>
 							</descriptorRefs>
+							<appendAssemblyId>false</appendAssemblyId>
 							<finalName>MqttIotAgent-${project.version}</finalName>
 						</configuration>
 						<phase>package</phase>
@@ -46,10 +50,14 @@
 								<manifest>
 									<mainClass>it.unibo.arces.wot.sepa.apps.mqtt.ObservationLogger</mainClass>
 								</manifest>
+								<manifestEntries>
+										<Multi-Release>true</Multi-Release>
+									</manifestEntries>
 							</archive>
 							<descriptorRefs>
 								<descriptorRef>jar-with-dependencies</descriptorRef>
 							</descriptorRefs>
+							<appendAssemblyId>false</appendAssemblyId>
 							<finalName>ObservationLogger-${project.version}</finalName>
 						</configuration>
 						<phase>package</phase>
@@ -64,10 +72,14 @@
 								<manifest>
 									<mainClass>it.unibo.arces.wot.sepa.apps.mqtt.mappers.DefaultMapper</mainClass>
 								</manifest>
+								<manifestEntries>
+										<Multi-Release>true</Multi-Release>
+									</manifestEntries>
 							</archive>
 							<descriptorRefs>
 								<descriptorRef>jar-with-dependencies</descriptorRef>
 							</descriptorRefs>
+							<appendAssemblyId>false</appendAssemblyId>
 							<finalName>DefaultMapper-${project.version}</finalName>
 						</configuration>
 						<phase>package</phase>
@@ -82,10 +94,14 @@
 								<manifest>
 									<mainClass>it.unibo.arces.wot.sepa.apps.mqtt.mappers.GuaspariMapper</mainClass>
 								</manifest>
+								<manifestEntries>
+										<Multi-Release>true</Multi-Release>
+									</manifestEntries>
 							</archive>
 							<descriptorRefs>
 								<descriptorRef>jar-with-dependencies</descriptorRef>
 							</descriptorRefs>
+							<appendAssemblyId>false</appendAssemblyId>
 							<finalName>GuaspariMapper-${project.version}</finalName>
 						</configuration>
 						<phase>package</phase>
@@ -100,11 +116,37 @@
 								<manifest>
 									<mainClass>it.unibo.arces.wot.sepa.apps.mqtt.mappers.LepidaMapper</mainClass>
 								</manifest>
+								<manifestEntries>
+										<Multi-Release>true</Multi-Release>
+									</manifestEntries>
 							</archive>
 							<descriptorRefs>
 								<descriptorRef>jar-with-dependencies</descriptorRef>
 							</descriptorRefs>
+							<appendAssemblyId>false</appendAssemblyId>
 							<finalName>LepidaMapper-${project.version}</finalName>
+						</configuration>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>build-mqtt-LepidaMapper2</id>
+						<configuration>
+							<archive>
+								<manifest>
+									<mainClass>it.unibo.arces.wot.sepa.apps.mqtt.mappers.LepidaMapper2</mainClass>
+								</manifest>
+								<manifestEntries>
+										<Multi-Release>true</Multi-Release>
+									</manifestEntries>
+							</archive>
+							<descriptorRefs>
+								<descriptorRef>jar-with-dependencies</descriptorRef>
+							</descriptorRefs>
+							<appendAssemblyId>false</appendAssemblyId>
+							<finalName>LepidaMapper2-${project.version}</finalName>
 						</configuration>
 						<phase>package</phase>
 						<goals>
@@ -118,10 +160,14 @@
 								<manifest>
 									<mainClass>it.unibo.arces.wot.sepa.apps.mqtt.mappers.MeterMapper</mainClass>
 								</manifest>
+								<manifestEntries>
+										<Multi-Release>true</Multi-Release>
+									</manifestEntries>
 							</archive>
 							<descriptorRefs>
 								<descriptorRef>jar-with-dependencies</descriptorRef>
 							</descriptorRefs>
+							<appendAssemblyId>false</appendAssemblyId>
 							<finalName>MeterMapper-${project.version}</finalName>
 						</configuration>
 						<phase>package</phase>
@@ -136,10 +182,14 @@
 								<manifest>
 									<mainClass>it.unibo.arces.wot.sepa.apps.mqtt.mappers.SwampMapper</mainClass>
 								</manifest>
+								<manifestEntries>
+										<Multi-Release>true</Multi-Release>
+									</manifestEntries>
 							</archive>
 							<descriptorRefs>
 								<descriptorRef>jar-with-dependencies</descriptorRef>
 							</descriptorRefs>
+							<appendAssemblyId>false</appendAssemblyId>
 							<finalName>SwampMapper-${project.version}</finalName>
 						</configuration>
 						<phase>package</phase>
@@ -154,11 +204,37 @@
 								<manifest>
 									<mainClass>it.unibo.arces.wot.sepa.apps.mqtt.mappers.WizzilabMapper</mainClass>
 								</manifest>
+								<manifestEntries>
+										<Multi-Release>true</Multi-Release>
+									</manifestEntries>
 							</archive>
 							<descriptorRefs>
 								<descriptorRef>jar-with-dependencies</descriptorRef>
 							</descriptorRefs>
+							<appendAssemblyId>false</appendAssemblyId>
 							<finalName>WizzilabMapper-${project.version}</finalName>
+						</configuration>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>build-mqtt-ConnectMapper</id>
+						<configuration>
+							<archive>
+								<manifest>
+									<mainClass>it.unibo.arces.wot.sepa.apps.mqtt.mappers.ConnectMapper</mainClass>
+								</manifest>
+								<manifestEntries>
+										<Multi-Release>true</Multi-Release>
+									</manifestEntries>
+							</archive>
+							<descriptorRefs>
+								<descriptorRef>jar-with-dependencies</descriptorRef>
+							</descriptorRefs>
+							<appendAssemblyId>false</appendAssemblyId>
+							<finalName>ConnectMapper-${project.version}</finalName>
 						</configuration>
 						<phase>package</phase>
 						<goals>
@@ -167,7 +243,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 				<version>3.0.1</version>

@@ -10,7 +10,6 @@ import it.unibo.arces.wot.sepa.commons.exceptions.SEPABindingsException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPAPropertiesException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPAProtocolException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPASecurityException;
-import it.unibo.arces.wot.sepa.commons.security.ClientSecurityManager;
 
 /**
  
@@ -36,11 +35,6 @@ public class WizzilabMapper extends MqttMapper {
 		synchronized(mapper) {
 			mapper.wait();
 		}	
-	}
-	
-	public WizzilabMapper(ClientSecurityManager sm)
-			throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException, InterruptedException {
-		super(sm, "mqtt:WizzilabMapper");
 	}
 	
 	public WizzilabMapper()

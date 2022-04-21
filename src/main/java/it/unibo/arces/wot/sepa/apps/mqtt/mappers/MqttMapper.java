@@ -14,7 +14,6 @@ import it.unibo.arces.wot.sepa.commons.exceptions.SEPAProtocolException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPASecurityException;
 import it.unibo.arces.wot.sepa.commons.response.ErrorResponse;
 import it.unibo.arces.wot.sepa.commons.response.Notification;
-import it.unibo.arces.wot.sepa.commons.security.ClientSecurityManager;
 import it.unibo.arces.wot.sepa.commons.sparql.ARBindingsResults;
 import it.unibo.arces.wot.sepa.commons.sparql.Bindings;
 import it.unibo.arces.wot.sepa.commons.sparql.BindingsResults;
@@ -38,24 +37,15 @@ public abstract class MqttMapper implements ISubscriptionHandler {
 	
 	private GenericClient client;
 	private JSAP appProfile;
-	
-	public MqttMapper(ClientSecurityManager sm, String uri) throws SEPAProtocolException, SEPAPropertiesException, SEPASecurityException {
-		this.appProfile = new JSAP("mqtt.jsap");
-		
-		client = new GenericClient(appProfile, sm, this);
-
-		mapperUri = uri;
-	}
 		
 	public MqttMapper(String uri) throws SEPAProtocolException, SEPAPropertiesException, SEPASecurityException {
 		this.appProfile = new JSAP("mqtt.jsap");
-		
-		client = new GenericClient(appProfile, null, this);
-
 		mapperUri = uri;
 	}
 	
-	public void start() {
+	public void start() throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException {
+		client = new GenericClient(appProfile, this);
+		
 		while (!subscribed) {
 			aliases.clear();
 			try {
@@ -178,6 +168,7 @@ public abstract class MqttMapper implements ISubscriptionHandler {
 
 				for (String[] observation : observations) {
 					Bindings fb = new Bindings();
+					if (observation[0] == null) continue;
 					fb.addBinding("observation", new RDFTermURI(observation[0]));
 					fb.addBinding("value", new RDFTermLiteral(observation[1],
 							appProfile.getUpdateBindings("UPDATE_OBSERVATION_VALUE").getDatatype("value")));
@@ -219,24 +210,12 @@ public abstract class MqttMapper implements ISubscriptionHandler {
 	public void onBrokenConnection(ErrorResponse err) {
 		logger.error(mapperUri + " *** onBrokenConnection *** "+err);
 
-		while (!subscribed) {
-			logger.info(mapperUri + " subscribe...");
-			aliases.clear();
-			try {
-				subscribe(mapperUri);
-			} catch (SEPAProtocolException | SEPASecurityException | SEPAPropertiesException | SEPABindingsException
-					| InterruptedException e) {
-				logger.error(mapperUri + " failed to subscribe. " + e.getMessage());
-				continue;
-			}
-
-			synchronized (this) {
-				try {
-					wait(5000);
-				} catch (InterruptedException e) {
-					return;
-				}
-			}
+		try {
+			subscribed = false;
+			client.close();
+			start();
+		} catch (SEPAProtocolException | SEPASecurityException | SEPAPropertiesException | IOException e) {
+			logger.error(e.getMessage());
 		}
 	}
 

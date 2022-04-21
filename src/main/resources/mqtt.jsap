@@ -1,5 +1,5 @@
 {
-	"#include" : ["file:///host.jsap"],
+	"#include" : ["file:///host-mml.jsap"],
 	"namespaces": {
 		"schema": "http://schema.org/",
 		"rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
@@ -30,6 +30,25 @@
 			}
 		},
 		"LOG_QUANTITY": {
+			"sparql": "INSERT {GRAPH ?observation {_:result rdf:type sosa:Result ; qudt:numericValue ?value ; time:inXSDDateTimeStamp ?timestamp}} WHERE {}",
+			"forcedBindings": {
+				"observation": {
+					"type": "uri",
+					"value": "http://an/observation/uri/ObservationXYZ"
+				},
+				"value": {
+					"type": "literal",
+					"value": "1234",
+					"datatype": "xsd:decimal"
+				},
+				"timestamp": {
+					"type": "literal",
+					"value": "1974-10-13T00:00:00Z",
+					"datatype": "xsd:dateTimeStamp"
+				}
+			}
+		},
+		"LOG_QUANTITY_FULL": {
 			"sparql": "INSERT {GRAPH <http://wot.arces.unibo.it/observation/history> {_:result sosa:isResultOf ?observation ; qudt:numericValue ?value ; time:inXSDDateTimeStamp ?timestamp}} WHERE {}",
 			"forcedBindings": {
 				"observation": {
@@ -49,7 +68,7 @@
 			}
 		},
 		"UPDATE_OBSERVATION_VALUE": {
-			"sparql": "WITH <http://wot.arces.unibo.it/observation> DELETE { ?quantity qudt:numericValue ?oldValue . ?observation sosa:resultTime ?oldTime } INSERT { ?quantity qudt:numericValue ?value . ?observation sosa:resultTime ?timestamp } WHERE {BIND(now() AS ?timestamp) . ?observation rdf:type sosa:Observation ; sosa:hasResult ?quantity . OPTIONAL { ?observation sosa:resultTime ?oldTime} . OPTIONAL {?quantity qudt:numericValue ?oldValue }}",
+			"sparql": "WITH <http://wot.arces.unibo.it/observation> DELETE { ?quantity qudt:numericValue ?oldValue . ?observation sosa:resultTime ?oldTime } INSERT { ?quantity qudt:numericValue ?value . ?observation sosa:resultTime ?timestamp } WHERE {BIND(now() AS ?timestamp) . ?observation rdf:type sosa:Observation ; sosa:hasResult ?quantity . OPTIONAL { ?observation sosa:resultTime ?oldTime . ?quantity qudt:numericValue ?oldValue}}",
 			"forcedBindings": {
 				"observation": {
 					"type": "uri",
@@ -65,7 +84,7 @@
 	},
 	"queries": {
 		"OBSERVATIONS": {
-			"sparql": "SELECT * FROM <http://wot.arces.unibo.it/unit> FROM <http://swamp-project.org/observation/cbec> FROM <http://wot.arces.unibo.it/observation> FROM <http://wot.arces.unibo.it/context> WHERE {?observation rdf:type sosa:Observation ; rdfs:label ?label ; sosa:hasResult ?quantity ; sosa:hasFeatureOfInterest ?location . ?location rdf:type schema:Place ; schema:name ?name ; schema:GeoCoordinates ?coordinate . ?coordinate schema:latitude ?lat ; schema:longitude ?long . ?quantity rdf:type qudt:QuantityValue ; qudt:unit ?unit . OPTIONAL {?quantity qudt:numericValue ?value} . OPTIONAL {?observation sosa:resultTime ?timestamp} . ?location schema:name ?name . OPTIONAL{?unit qudt:symbol ?symbol}}"
+			"sparql": "SELECT * FROM <http://swamp-project.org/observation/cbec> FROM <http://wot.arces.unibo.it/observation/2021> FROM <http://wot.arces.unibo.it/observation> WHERE {?observation rdf:type sosa:Observation ; sosa:resultTime ?timestamp ; sosa:hasResult ?quantity . ?quantity rdf:type qudt:QuantityValue ; qudt:numericValue ?value}"
 		},
 		"MQTT_BROKERS": {
 			"sparql": "SELECT * WHERE { GRAPH <http://wot.arces.unibo.it/mqtt> {?broker mqtt:url ?url ; rdf:type mqtt:Broker ; mqtt:port ?port ; mqtt:sslProtocol ?sslProtocol ; mqtt:user ?user ; mqtt:password ?password ; mqtt:sslCA ?caFile ; mqtt:clientId ?clientId}}"

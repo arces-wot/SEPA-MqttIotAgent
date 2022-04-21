@@ -12,7 +12,6 @@ import it.unibo.arces.wot.sepa.commons.exceptions.SEPABindingsException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPAPropertiesException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPAProtocolException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPASecurityException;
-import it.unibo.arces.wot.sepa.commons.security.ClientSecurityManager;
 
 public class LepidaMapper extends MqttMapper {
 	public static void main(String[] args) throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException, InterruptedException, IOException{			
@@ -38,10 +37,10 @@ public class LepidaMapper extends MqttMapper {
 	 * }
 	 * 
 	 * */
-	public LepidaMapper(ClientSecurityManager sm, String uri)
-			throws SEPAProtocolException, SEPAPropertiesException, SEPASecurityException {
-		super(sm, "mqtt:LepidaMapper");
-	}
+//	public LepidaMapper(ClientSecurityManager sm, String uri)
+//			throws SEPAProtocolException, SEPAPropertiesException, SEPASecurityException {
+//		super(sm, "mqtt:LepidaMapper");
+//	}
 	
 	public LepidaMapper()
 			throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException, InterruptedException {
@@ -93,6 +92,8 @@ public class LepidaMapper extends MqttMapper {
 		mapping.add(new String[] {topic2observation.get(topic+"/Moisture_Signal_to_Supply_Perc"),String.format("%.2f", MoistureSignalRatio)});
 		mapping.add(new String[] {topic2observation.get(topic+"/Moisture_Supply_Voltage"),String.format("%.3f", MoistureVoltage)});
 		mapping.add(new String[] {topic2observation.get(topic+"/Battery_Level"),String.format("%d", Bat)});
+		
+		logger.info(mapperUri+" Observations: "+mapperUri);
 		 
 		return mapping;
 	}

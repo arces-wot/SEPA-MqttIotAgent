@@ -1,4 +1,25 @@
 {
+	"updates" : {
+		"DELETE_LOG_QUANTITY": {
+			"sparql": "WITH <http://wot.arces.unibo.it/observation/history> DELETE {?result sosa:isResultOf ?observation ; qudt:numericValue ?value; time:inXSDDateTimeStamp ?timestamp} WHERE {?result sosa:isResultOf ?observation ; qudt:numericValue ?value; time:inXSDDateTimeStamp ?timestamp FILTER (xsd:dateTime(?timestamp) > xsd:dateTime(?from) && xsd:dateTime(?timestamp) < xsd:dateTime(?to))} ORDER BY ?timestamp LIMIT 10",
+			"forcedBindings": {
+				"from": {
+					"datatype": "xsd:dateTime",
+					"type": "literal",
+					"value": "2019-07-15T00:00:00Z"
+				},
+				"to": {
+					"datatype": "xsd:dateTime",
+					"type": "literal",
+					"value": "2019-07-15T23:59:59Z"
+				},
+				"observation": {
+					"type": "uri",
+					"value": "arces-monitor:SanMicheleLevelsL1"
+				}
+			}
+		}
+	},
 	"queries": {
 		"IRRIGATION_FORECAST": {
 			"sparql": "SELECT ?value ?prediction WHERE {graph <http://wot.arces.unibo.it/forecast> {?obs sosa:hasFeatureOfInterest ?place ; rdf:type <http://swamp-project.org/ns#Forecast>; sosa:resultTime ?resultTime ; sosa:phenomenonTime ?prediction ; sosa:observedProperty swamp:IrrigationNeeds ; sosa:hasResult ?res . ?res qudt:numericValue ?value ; qudt:unit ?unit FILTER (xsd:dateTime(?resultTime) = xsd:dateTime(concat(?day,'T00:00:00Z')) && xsd:dateTime(?prediction) = xsd:dateTime(concat(?forecast,'T00:00:00Z')))}}",

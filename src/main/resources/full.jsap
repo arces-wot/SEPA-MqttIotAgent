@@ -659,6 +659,15 @@
 		},
 		"OBSERVATIONS_COUNT": {
 			"sparql": "SELECT (COUNT(?observation) AS ?count) WHERE {GRAPH <http://wot.arces.unibo.it/observation> {?observation rdf:type sosa:Observation}}"
+		},
+		"GET_ALL_REQUESTS" : {
+			"sparql" : "SELECT * FROM <http://swamp-project.org/cbec/irrigation> WHERE {?irr rdf:type <http://swamp-project.org/ontology/swamp#IrrigationRequest> ; time:inXSDDateTimeStamp ?timestamp ;<http://swamp-project.org/ontology/swamp#issuedBy> ?issuedBy ; <http://swamp-project.org/ontology/swamp#hasCurrentStatus> ?currentStatus ; <http://swamp-project.org/ontology/swamp#requestNumber> ?requestNumber ; <http://swamp-project.org/ontology/swamp#reservationNumber> ?reservationNumber ; <http://swamp-project.org/ontology/swamp#hasField> ?fieldUri ; <http://swamp-project.org/ontology/swamp#hasStatus> ?status . ?status time:inXSDDateTimeStamp ?x ; <http://swamp-project.org/ontology/swamp#requestStatus> ?reqStatus} ORDER BY ?timestamp"
+		},
+		"CROP": {
+			"sparql": "SELECT * FROM <http://swamp-project.org/cbec/crop> WHERE {?crop rdf:type <http://swamp-project.org/ontology/swamp#Crop> ; rdf:type agrovoc:c_8171 ; <http://swamp-project.org/ontology/swamp#hasCropCode> ?code ; rdfs:label ?label} ORDER BY ?label"
+		},
+		"FIELD": {
+			"sparql": "SELECT * FROM <http://swamp-project.org/cbec/field> FROM <http://swamp-project.org/cbec/crop> WHERE {?fieldUri rdf:type <http://swamp-project.org/ontology/swamp#Field> ; <http://swamp-project.org/ontology/swamp#hasGeometry> ?geometry ; <http://swamp-project.org/ontology/swamp#hasCanal> ?canalUri ; <http://swamp-project.org/ontology/swamp#hasCrop> ?cropUri ; <http://swamp-project.org/ontology/swamp#managedBy> ?farmerUri . ?cropUri rdfs:label ?cropLabel}"
 		}
 	}
 }

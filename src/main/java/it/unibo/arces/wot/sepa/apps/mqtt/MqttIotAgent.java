@@ -17,7 +17,7 @@ import it.unibo.arces.wot.sepa.commons.exceptions.SEPAPropertiesException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPAProtocolException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPASecurityException;
 import it.unibo.arces.wot.sepa.commons.response.Response;
-import it.unibo.arces.wot.sepa.commons.security.ClientSecurityManager;
+import it.unibo.arces.wot.sepa.commons.security.Credentials;
 import it.unibo.arces.wot.sepa.commons.sparql.RDFTermLiteral;
 import it.unibo.arces.wot.sepa.commons.sparql.RDFTermURI;
 import it.unibo.arces.wot.sepa.pattern.JSAP;
@@ -26,26 +26,26 @@ import it.unibo.arces.wot.sepa.pattern.Producer;
 public class MqttIotAgent {
 	private static final Logger logger = LogManager.getLogger();
 	
-	private static void clearAll(JSAP app, ClientSecurityManager sm) throws SEPAProtocolException, SEPASecurityException,
+	private static void clearAll(JSAP app) throws SEPAProtocolException, SEPASecurityException,
 			SEPAPropertiesException, SEPABindingsException, IOException {
 		
 		app.read("clear.jsap", true);
 		
 		// Clear all
 		Producer client = null;
-		client = new Producer(app, "CLEAR_MQTT_GRAPH", sm);
+		client = new Producer(app, "CLEAR_MQTT_GRAPH");
 		client.update();
 		client.close();
 
-		client = new Producer(app, "CLEAR_MQTT_MESSAGE_GRAPH", sm);
+		client = new Producer(app, "CLEAR_MQTT_MESSAGE_GRAPH");
 		client.update();
 		client.close();
 
-		client = new Producer(app, "CLEAR_CONTEXT_GRAPH", sm);
+		client = new Producer(app, "CLEAR_CONTEXT_GRAPH");
 		client.update();
 		client.close();
 
-		client = new Producer(app, "CLEAR_OBSERVATION_GRAPH", sm);
+		client = new Producer(app, "CLEAR_OBSERVATION_GRAPH");
 		client.update();
 		client.close();
 	}
@@ -104,8 +104,24 @@ public class MqttIotAgent {
 				return true;
 		return false;
 	}
+	
+	private static Credentials getCredentials(String[] args) {
+		String user = null;
+		String secret = null;
+		
+		for (int i = 0; i < args.length; i++) {
+			if (args[i].equals("-u"))
+				user = args[i+1];
+			if (args[i].equals("-p"))
+				secret = args[i+1];
+		
+		}
+		
+		if (user != null && secret != null) return new Credentials(user, secret);
+		return null;	
+	}
 
-	private static void addAdapters(JSAP app, ClientSecurityManager sm) throws IOException, SEPAPropertiesException, SEPASecurityException {
+	private static void addAdapters(JSAP app) throws IOException, SEPAPropertiesException, SEPASecurityException {
 		logger.info("Parse adapters");
 
 		app.read("adapters.jsap", true);
@@ -118,7 +134,7 @@ public class MqttIotAgent {
 				try {
 					JsonObject adapt = adapter.getValue().getAsJsonObject();
 
-					client = new Producer(app, "ADD_MQTT_BROKER", sm);
+					client = new Producer(app, "ADD_MQTT_BROKER");
 
 					String url = adapt.get("url").getAsString();
 					String port = adapt.get("port").getAsString();
@@ -167,7 +183,7 @@ public class MqttIotAgent {
 					client.update();
 					client.close();
 
-					client = new Producer(app, "ADD_TOPIC_TO_MQTT_BROKER", sm);
+					client = new Producer(app, "ADD_TOPIC_TO_MQTT_BROKER");
 					client.setUpdateBindingValue("url", new RDFTermLiteral(url));
 					client.setUpdateBindingValue("port", new RDFTermLiteral(port, "xsd:integer"));
 
@@ -187,7 +203,7 @@ public class MqttIotAgent {
 		}
 	}
 
-	private static void addMappings(JSAP app, ClientSecurityManager sm) throws FileNotFoundException, IOException, SEPAPropertiesException, SEPASecurityException {
+	private static void addMappings(JSAP app) throws FileNotFoundException, IOException, SEPAPropertiesException, SEPASecurityException {
 		logger.info("Parse mappings");
 
 		app.read("mappings.jsap", true);
@@ -198,7 +214,7 @@ public class MqttIotAgent {
 			JsonObject mappings = app.getExtendedData().getAsJsonObject("mappings");
 
 			try {
-				client = new Producer(app, "ADD_MQTT_MAPPING", sm);
+				client = new Producer(app, "ADD_MQTT_MAPPING");
 
 				for (Entry<String, JsonElement> topic : mappings.entrySet()) {
 					client.setUpdateBindingValue("topic", new RDFTermLiteral(topic.getKey()));
@@ -228,14 +244,14 @@ public class MqttIotAgent {
 					}
 					JsonArray topics = map.getAsJsonArray("topics");
 
-					client = new Producer(app, "ADD_MQTT_MAPPER", sm);
+					client = new Producer(app, "ADD_MQTT_MAPPER");
 					client.setUpdateBindingValue("mapper", new RDFTermURI(mapperUriString));
 					client.setUpdateBindingValue("topic", new RDFTermLiteral(topics.get(0).getAsString()));
 					client.update();
 					client.close();
 
 					if (topics.size() > 1) {
-						client = new Producer(app, "ADD_TOPIC_TO_MQTT_MAPPER", sm);
+						client = new Producer(app, "ADD_TOPIC_TO_MQTT_MAPPER");
 						client.setUpdateBindingValue("mapper", new RDFTermURI(mapperUriString));
 						for (int i = 1; i < topics.size(); i++) {
 							client.setUpdateBindingValue("topic", new RDFTermLiteral(topics.get(i).getAsString()));
@@ -245,7 +261,7 @@ public class MqttIotAgent {
 					}
 
 					if (regex != null) {
-						client = new Producer(app, "ADD_REGEX_TO_MQTT_MAPPER", sm);
+						client = new Producer(app, "ADD_REGEX_TO_MQTT_MAPPER");
 						client.setUpdateBindingValue("mapper", new RDFTermURI(mapperUriString));
 						for (int i = 0; i < regex.size(); i++) {
 							client.setUpdateBindingValue("regex", new RDFTermLiteral(regex.get(i).getAsString()));
@@ -264,7 +280,7 @@ public class MqttIotAgent {
 		}
 	}
 
-	private static void addPlaces(JSAP app, ClientSecurityManager sm) throws FileNotFoundException, IOException, SEPAPropertiesException, SEPASecurityException {
+	private static void addPlaces(JSAP app) throws FileNotFoundException, IOException, SEPAPropertiesException, SEPASecurityException {
 		logger.info("Parse places");
 
 		app.read("places.jsap", true);
@@ -275,7 +291,7 @@ public class MqttIotAgent {
 			JsonObject places = app.getExtendedData().get("places").getAsJsonObject();
 
 			try {
-				client = new Producer(app, "ADD_PLACE", sm);
+				client = new Producer(app, "ADD_PLACE");
 			} catch (SEPAProtocolException | SEPASecurityException | SEPAPropertiesException e) {
 				logger.error(e.getMessage());
 				return;
@@ -322,7 +338,7 @@ public class MqttIotAgent {
 				if (mapping.getValue().getAsJsonObject().has("childs")) {
 					Producer childs;
 					try {
-						childs = new Producer(app, "LINK_PLACES", sm);
+						childs = new Producer(app, "LINK_PLACES");
 					} catch (SEPAProtocolException | SEPASecurityException | SEPAPropertiesException e) {
 						logger.error(e.getMessage());
 						return;
@@ -367,7 +383,7 @@ public class MqttIotAgent {
 		}
 	}
 
-	private static void addObservations(JSAP app, ClientSecurityManager sm) throws FileNotFoundException, IOException, SEPAPropertiesException, SEPASecurityException {
+	private static void addObservations(JSAP app) throws FileNotFoundException, IOException, SEPAPropertiesException, SEPASecurityException {
 		logger.info("Parse observations");
 
 		app.read("observations.jsap", true);
@@ -378,7 +394,7 @@ public class MqttIotAgent {
 			JsonObject mappings = app.getExtendedData().get("observations").getAsJsonObject();
 
 			try {
-				client = new Producer(app, "ADD_OBSERVATION", sm);
+				client = new Producer(app, "ADD_OBSERVATION");
 			} catch (SEPAProtocolException | SEPASecurityException | SEPAPropertiesException e) {
 				logger.error(e.getMessage());
 				return;
@@ -439,12 +455,12 @@ public class MqttIotAgent {
 
 	public static void main(String[] args) throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException, IOException {		
 		printUsage();
-
-		ClientSecurityManager sm = null;
-
+		
 		JSAP app = null;
 		try {
 			app = new JSAP("mqtt.jsap");
+			Credentials cred = getCredentials(args);
+			if (cred != null) app.setClientCredentials(cred);
 		} catch (SEPAPropertiesException | SEPASecurityException e1) {
 			logger.fatal("Exception on reading JSAP: " + e1.getMessage());
 			System.exit(-1);
@@ -457,56 +473,56 @@ public class MqttIotAgent {
 		
 		// Init all
 		if (init(args)) {
-			clearAll(app, sm);
+			clearAll(app);
 
 			try {
-				addPlaces(app, sm);
+				addPlaces(app);
 			} catch (IOException e) {
 				logger.warn("Exception on add places " + e.getMessage());
 			}
 			try {
-				addObservations(app, sm);
+				addObservations(app);
 			} catch (IOException e) {
 				logger.warn("Exception on add observations " + e.getMessage());
 			}
 			try {
-				addAdapters(app, sm);
+				addAdapters(app);
 			} catch (IOException e) {
 				logger.warn("Exception on add adapters " + e.getMessage());
 			}
 			try {
-				addMappings(app, sm);
+				addMappings(app);
 			} catch (IOException e) {
 				logger.warn("Exception on add topics " + e.getMessage());
 			}
 		} else {
 			if (clear(args))
-				clearAll(app, sm);
+				clearAll(app);
 
 			if (initPlaces(args))
 				try {
-					addPlaces(app, sm);
+					addPlaces(app);
 				} catch (IOException e) {
 					logger.warn("Exception on add places " + e.getMessage());
 				}
 
 			if (initObservations(args))
 				try {
-					addObservations(app, sm);
+					addObservations(app);
 				} catch (IOException e) {
 					logger.warn("Exception on add observations " + e.getMessage());
 				}
 
 			if (initAdapters(args))
 				try {
-					addAdapters(app, sm);
+					addAdapters(app);
 				} catch (IOException e) {
 					logger.warn("Exception on add adapters " + e.getMessage());
 				}
 
 			if (initMappings(args))
 				try {
-					addMappings(app, sm);
+					addMappings(app);
 				} catch (IOException e) {
 					logger.warn("Exception on add topics " + e.getMessage());
 				}
@@ -515,35 +531,11 @@ public class MqttIotAgent {
 		// MQTT Adapter Pool
 		MqttAdapterPool agent = null;
 		try {
-			agent = new MqttAdapterPool(app, sm);
+			agent = new MqttAdapterPool(app);
 		} catch (SEPAProtocolException | IOException | SEPASecurityException | SEPAPropertiesException | SEPABindingsException e1) {
 			logger.fatal("Exception on creating AdapterPool " + e1.getMessage());
 			System.exit(-1);
 		}
-
-//		// Default mapper
-//		logger.info("Create default mapper");
-//		DefaultMapper defaultMapper = null;
-//		try {
-//			defaultMapper = new DefaultMapper(app, sm);
-//		} catch (SEPAProtocolException | SEPASecurityException | SEPAPropertiesException | SEPABindingsException | InterruptedException e1) {
-//			logger.error("Failed to create default mapper " + e1.getMessage());
-//		}
-		
-		// History logging
-//		ObservationLogger logObservation = null;
-//		if (doLog(args)) {
-//			logger.info("Historical data logging enabled");
-//			logger.info("Create observation logger");
-//			try {
-//				logObservation = new ObservationLogger(app, sm);
-//				logObservation.subscribe(5000);
-//			} catch (SEPASecurityException | SEPAPropertiesException | SEPAProtocolException
-//					| SEPABindingsException e) {
-//				logger.fatal("Exception on creating ObservationLogger " + e.getMessage());
-//				System.exit(-1);
-//			}
-//		}
 
 		// Started
 		logger.info("Started");
@@ -564,20 +556,6 @@ public class MqttIotAgent {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
-
-//		try {
-//			if (defaultMapper != null)
-//				defaultMapper.close();
-//		} catch (IOException e) {
-//			logger.warn(e.getMessage());
-//		}
-
-//		try {
-//			if (logObservation != null)
-//				logObservation.close();
-//		} catch (IOException e) {
-//			logger.warn(e.getMessage());
-//		}
 
 		System.exit(1);
 	}

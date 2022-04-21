@@ -1,6 +1,6 @@
 {
 	"#include": [
-		"file:///mml-host.jsap"
+		"file:///host-mml.jsap"
 	],
 	"extended": {
 		"adapters": {

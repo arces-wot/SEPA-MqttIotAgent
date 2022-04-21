@@ -79,8 +79,7 @@ public class MqttAdapter extends Aggregator implements MqttCallbackExtended {
 
 		JSAP jsap = new JSAP("mqtt.jsap");
 		
-		ClientSecurityManager security = (jsap.isSecure() ? new ClientSecurityManager(jsap.getAuthenticationProperties(), "sepa.jks",
-				"sepa2017"): null);
+		ClientSecurityManager security = (jsap.isSecure() ? new ClientSecurityManager(jsap.getAuthenticationProperties()): null);
 
 		// Load adapter
 		jsap.read("adapters.jsap");
@@ -118,7 +117,7 @@ public class MqttAdapter extends Aggregator implements MqttCallbackExtended {
 
 	public MqttAdapter(JSAP appProfile, ClientSecurityManager sm, JsonObject sim)
 			throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException {
-		super(appProfile, "MQTT_BROKER_TOPICS", "MQTT_MESSAGE", sm);
+		super(appProfile, "MQTT_BROKER_TOPICS", "MQTT_MESSAGE");
 
 		simulator(sim);
 	}
@@ -140,7 +139,7 @@ public class MqttAdapter extends Aggregator implements MqttCallbackExtended {
 	public MqttAdapter(JSAP appProfile, ClientSecurityManager sm, String url, int port, String clientId, String user,
 			String password, String protocol, String caCertFile)
 			throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, SEPABindingsException {
-		super(appProfile, "MQTT_BROKER_TOPICS", "MQTT_MESSAGE", sm);
+		super(appProfile, "MQTT_BROKER_TOPICS", "MQTT_MESSAGE");
 
 		// Options
 		options = new MqttConnectOptions();
@@ -206,6 +205,11 @@ public class MqttAdapter extends Aggregator implements MqttCallbackExtended {
 						logger.error(serverUID + " MqttSecurityException: " + e.getMessage());
 					} catch (MqttException e) {
 						logger.error(serverUID + " MqttException: " + e.getMessage());
+					}
+					try {
+						Thread.sleep(5000);
+					} catch (InterruptedException e) {
+						logger.error(serverUID + " InterruptedException: " + e.getMessage());
 					}
 				}
 			}
@@ -278,6 +282,11 @@ public class MqttAdapter extends Aggregator implements MqttCallbackExtended {
 										return;
 									}
 									logger.warn(serverUID + " exception on subscribe: " + e.getMessage());
+									try {
+										Thread.sleep(5000);
+									} catch (InterruptedException e1) {
+										return;
+									}
 									continue;
 								}
 

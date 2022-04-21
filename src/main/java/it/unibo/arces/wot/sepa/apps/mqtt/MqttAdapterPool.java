@@ -10,7 +10,6 @@ import it.unibo.arces.wot.sepa.commons.exceptions.SEPABindingsException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPAPropertiesException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPAProtocolException;
 import it.unibo.arces.wot.sepa.commons.exceptions.SEPASecurityException;
-import it.unibo.arces.wot.sepa.commons.security.ClientSecurityManager;
 import it.unibo.arces.wot.sepa.commons.sparql.Bindings;
 import it.unibo.arces.wot.sepa.commons.sparql.BindingsResults;
 import it.unibo.arces.wot.sepa.pattern.Consumer;
@@ -21,9 +20,9 @@ public class MqttAdapterPool extends Consumer {
 
 	private HashMap<String,MqttAdapter> adapters = new HashMap<String,MqttAdapter>();
 
-	public MqttAdapterPool(JSAP appProfile, ClientSecurityManager sm)
+	public MqttAdapterPool(JSAP appProfile)
 			throws SEPAProtocolException, SEPASecurityException, SEPAPropertiesException, IOException, SEPABindingsException {
-		super(appProfile, "MQTT_BROKERS", sm);
+		super(appProfile, "MQTT_BROKERS");
 		
 		subscribe();
 	}

@@ -1,36 +1,48 @@
 {
-	"host": "engine",
-	"oauth": {
-		"enable": false,
-		"register": "https://localhost:8443/oauth/register",
-		"tokenRequest": "https://localhost:8443/oauth/token"
-	},
+	"host": "arces143100.arces.unibo.it",
 	"sparql11protocol": {
-		"protocol": "http",
-		"port": 8000,
+		"protocol": "https",
+		"port": 9001,
 		"query": {
-			"path": "/query",
+			"path": "/secure/query",
 			"method": "POST",
 			"format": "JSON"
 		},
 		"update": {
-			"path": "/update",
+			"path": "/secure/update",
 			"method": "POST",
 			"format": "JSON"
 		}
 	},
 	"sparql11seprotocol": {
-		"reconnect" : true,
-		"protocol": "ws",
+		"protocol": "wss",
 		"availableProtocols": {
 			"ws": {
-				"port": 9000,
+				"port": 9002,
 				"path": "/subscribe"
 			},
 			"wss": {
-				"port": 9443,
+				"port": 9002,
 				"path": "/secure/subscribe"
 			}
 		}
+	},
+	"oauth": {
+		"enable": true,
+		"ssl": "TLSv1.2",
+		"registration": {
+			"endpoint": "https://arces143100.arces.unibo.it:8443/auth/realms/swamp/clients-registrations/default",
+			"initialAccessToken": "PLACE_HERE_YOUR_TOKEN",
+			"username": "PLACE_HERE_YOUR_USERNAME"
+		},
+		"authentication": {
+			"endpoint": "https://arces143100.arces.unibo.it:8443/auth/realms/swamp/protocol/openid-connect/token",
+			"client_id": "kKvAgvBBJVU6ltcX7dRcDQ==",
+			"client_secret": "3MO6lRJxi5CsuVN61xK4tKI7/irO7dBZYqTRHTqF9Ac1T/gjHWXYbPZqltbkY7Dw",
+			"jwt": "xabtQWoH8RJJk1FyKJ78J3jaFqpRDQjXEwGovBZ5+1k3fauyBMvMa0G6pVNKIgd3k0Qgy1C/egVkrBMtsy1Q/oqASCOKBk6/rGYhPDzsLm5pX/y6UsX9OqSuuVWFRWFTHqAukOmt4hbhemSgmRawjr4D3PzzSv637w4KdpEM7c17vn1krc6JL69FIXpkMoNw5+qc796+DzUNhDu/bhjE0KAYHSuw++Uk6BFZM3ViV8/o23KQxA96ARufURXpepvPOaGW2g6DMx9zTWOc1dTUfMrKpxyDPXyOl1qhQloDEq706gewwGPl6gQeXSFyfomMFN3a65pjQyv1cuOZcwhbHseokPm53XYIyuLp7fWybnPEGIYsTTBMz8W5CWDFZPNg/Pe1zdbuMr5vR5m4FwPT9WVofn1y+0iqk+tB5s192oGeNQnTnlc0fwKxt3QL3INc5h90kLNzKrvYMwQcALPeEIh/Y8fhnlOnDTJjdgFuTX6GFaPxnln4cI6g1CUuqt1GI17SBeEY47sEb6UmsyxvBShSCx/xMntIpmhNNOeiWSvJyz/AvV4gCGiWMcnS1wKjAKh0zedNg+hqQ95adrLursSpENany5CYTOlwO64tJrl7rw1jvCM7r3b4igcDywTOrf/yBksVNDlF7DkSQzzkgf8T2YAjvgygP7rkAziNuOclZ5/vFQYO9nK6PwlnjYdJq0wibo4nARehS4qJPxEInHdrLEnvpkpSUo2ETuSe7+G2rgQ52dHZPE+LpBF0r9Qqb7VOtlU0rSSI4g81JP5zfTTPjSvSQoZNYbMPvjs3ub4wdOh5P4zPHTmDrhFCvswkyxW62z/nDuGMCKEz2LzEsp7IW/n8X3m+2qrVgidR3cJOeyPyHzjw6gf+VC+QodKaSsKs4NyxKSEgbweJWcw/dEV3xwxPeOh+LFxqTfsD1gWJM5EpgoL5eKxA178lVhEwjquJfTrdqRnhwzZHgdgUrmgt41NjvnbyBF1kMlwoB0WPFOH+u3nlNAuIS/ugitCiB/L13LGVpxd5BwW38nHgebKGdO74N8MjCdvzDS1Ddg/EaLn8L5xYojQVJIVmnagLMAg9zqAiXXEIM4Hh8+WSkksWXadZgZc/QriL5RP675RpP7B3ROt39/qIJRmj2AdvHw/UR/Ids97NOnS2hnTKLyDy1f+3XWb+Jyg7PvnW7uehFC3phSZSJBdwfiLuGlzzCiydQmhR3bDbt3wlO0UDTYs7PkoOUG6jVv41eR6RTvpz34+GUFNVPXbTBCRTVMFBkok+AVQWG9hACtzQE1qP7q9rJm5V4ZybaijuU+jDfGp7IWtjsenMS9gogT+xrfvIOtXrOQm/8QY+9MGVlnRNvlLRO5pWU88ASTcyfdu+DwSiEJfrGvVWAUJ55qIszCHMvR/7zqjCFHjELTnyqo7rmEDgY9SixfDaT9IzV9Zy+UIiZgZqbxBDQhW4h2ToLhN5IANgJL5YloRZr0+ZhvHV1kGVGYjsZynkG9269HyTaMwWwbVIba4KLefy4WJsDFFOZXJn0kfQMZQ6WdNQtKAx5yAOS2XyytTZsqtcGOhKgA/6Y8RTdEMdc9tdFlG3taCWSYMOQkn9anumdwya7KdSBSWpgk4LAmUuDv9CCm7h3OVdTbGFo9J2H5CJfHzUoqp/hNRKsgZMKxxT1azsdTcTMVotU0b553ZG5t2OsNlFPW0ORndvZASo4YMAnxsaBAmGKzPHIDMh4WntqN2yYq+KmtoBA7TuKRAiExwYOrf1LjddF36G4mDSRM0rH1pilJ+sHIycVtNe2ckVKHpNDrr5YA==",
+			"expires": "1pV0TDASmUsxnCwYw7rc6g==",
+			"type": "XPrHEX2xHy+5IuXHPHigMw=="
+		},
+		"provider": "keycloak"
 	}
 }
